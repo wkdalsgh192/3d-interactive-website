@@ -3,9 +3,10 @@ import { Routes, Route } from "react-router-dom";
 import { CssBaseline, Box, Toolbar } from "@mui/material";
 import Sidebar from "./components/Sidebar";
 import MainPage from "./pages/MainPage";
-import DashboardPage from "./pages/DashboardPage";
-import ReportsPage from "./pages/ReportsPage";
+import VisualizationPage from "./pages/VisualizationPage";
+import DatabasePage from "./pages/DatabasePage";
 import SettingsPage from "./pages/SettingsPage";
+import PortfolioPage from "./pages/PortfolioPage";
 
 export default function App() {
   return (
@@ -15,9 +16,10 @@ export default function App() {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
         <Routes>
-          <Route path="/" element={<MainPage />} />  
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/" element={<MainPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/visualization" element={<VisualizationPage />} />
+          <Route path="/database" element={<DatabasePage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </Box>
