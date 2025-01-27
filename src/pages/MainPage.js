@@ -1,12 +1,9 @@
 import React from "react";
-import ProgressBar from "../components/ProgressBar";
+import LoadingScreen from "../components/LoadingScreen";
 
 const MainPage = () => {
   return (
-    <div>
-      <h1>Progress Tracker</h1>
-      <ProgressBar />
-    </div>
+    <LoadingScreen />
   );
 };
 

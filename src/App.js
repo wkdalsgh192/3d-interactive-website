@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { CssBaseline, Box, Toolbar } from "@mui/material";
+import { CssBaseline, Box } from "@mui/material";
 import Sidebar from "./components/Sidebar";
 import MainPage from "./pages/MainPage";
 import VisualizationPage from "./pages/VisualizationPage";
@@ -13,8 +13,12 @@ export default function App() {
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <Sidebar />
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
+      <Box component="main" 
+        sx={{ 
+          flexGrow: 1, 
+          p: 0,
+          overflow: 'hidden'
+        }}>
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
