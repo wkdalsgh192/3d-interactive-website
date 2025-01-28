@@ -370,3 +370,35 @@ input:checked ~ #sun {
     }
 
   }
+
+.teapot-swiper {
+    width: 100%;
+    margin: 20px 0;
+}
+
+.teapot-swiper .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.teapot-swiper .project-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Custom navigation button styles */
+.teapot-swiper .swiper-button-next,
+.teapot-swiper .swiper-button-prev {
+    color: #000;
+}
+
+/* Custom pagination styles */
+.teapot-swiper .swiper-pagination-bullet {
+    background: #000;
+}
+
+.teapot-swiper .swiper-pagination-bullet-active {
+    background: #000;
+}

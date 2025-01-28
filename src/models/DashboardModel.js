@@ -1,162 +1,146 @@
-import React, { useEffect, useRef } from "react";
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import * as dat from 'dat.gui';
+import React, { useEffect, useRef, useState } from "react";
+import * as d3 from "d3";
 
 const DashboardModel = () => {
-  const mountRef = useRef(null);
+  const svgRef = useRef();
+  const [data, setData] = useState([
+    { id: 1, value: 80, color: "#FF6384", label: "PC" },
+    { id: 2, value: 10, color: "#36A2EB", label: "Tablet" },
+    { id: 3, value: 5, color: "#FFCE56", label: "Mobile" },
+    { id: 4, value: 5, color: "#000000", label: "Other" }
+  ]);
 
   useEffect(() => {
-    // Scene setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    mountRef.current.appendChild(renderer.domElement);
+    if (!data || data.length === 0) return;
 
-    // Sample data for donut chart
-    const data = [
-      { label: "Segment 1", value: 30, color: 0xff4444 },
-      { label: "Segment 2", value: 20, color: 0x44ff44 },
-      { label: "Segment 3", value: 15, color: 0x4444ff },
-      { label: "Segment 4", value: 35, color: 0xffff44 }
-    ];
+    const width = 400;
+    const height = 400;
+    const radius = Math.min(width, height) / 2;
 
-    // Create donut chart segments
-    const outerRadius = 5;
-    const innerRadius = 3; // Added inner radius for donut
-    const height = 2;
-    const totalValue = data.reduce((sum, item) => sum + item.value, 0);
-    let startAngle = 0;
+    // Clear previous SVG contents
+    d3.select(svgRef.current).selectAll("*").remove();
 
-    data.forEach(segment => {
-      const angle = (segment.value / totalValue) * Math.PI * 2;
-      
-      // Create segment geometry with inner circle
-      const shape = new THREE.Shape();
-      
-      // Starting point at inner radius
-      shape.moveTo(innerRadius * Math.cos(startAngle), innerRadius * Math.sin(startAngle));
-      
-      // Draw line to outer radius
-      shape.lineTo(outerRadius * Math.cos(startAngle), outerRadius * Math.sin(startAngle));
-      
-      // Draw outer arc
-      const outerArc = new THREE.Path();
-      outerArc.absarc(0, 0, outerRadius, startAngle, startAngle + angle, false);
-      shape.add(outerArc);
-      
-      // Draw line back to inner radius
-      shape.lineTo(innerRadius * Math.cos(startAngle + angle), innerRadius * Math.sin(startAngle + angle));
-      
-      // Draw inner arc
-      const innerArc = new THREE.Path();
-      innerArc.absarc(0, 0, innerRadius, startAngle + angle, startAngle, true);
-      shape.add(innerArc);
+    // Create an SVG container
+    const svg = d3.select(svgRef.current)
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
-      const extrudeSettings = {
-        steps: 1,
-        depth: height,
-        bevelEnabled: false
-      };
+    // Pie and Arc generators
+    const pie = d3.pie()
+        .value(d => d.value)
+        .sort(null);
 
-      const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-      const material = new THREE.MeshPhongMaterial({
-        color: segment.color,
-        side: THREE.DoubleSide,
-        shininess: 100
-      });
+    const arc = d3.arc()
+        .innerRadius(radius * 0.6)
+        .outerRadius(radius);
 
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.rotation.x = Math.PI / 2;
-      scene.add(mesh);
-
-      startAngle += angle;
-    });
-
-    // Add lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 10, 10);
-    scene.add(directionalLight);
-
-    // Camera position
-    camera.position.set(0, 15, 15);
-    camera.lookAt(0, 0, 0);
-
-    // Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-
-    // GUI controls
-    const gui = new dat.GUI();
-    const chartControls = {
-      rotationSpeed: 0.01,
-      height: height,
-      innerRadius: innerRadius,
-      outerRadius: outerRadius
+    // Add transition
+    const arcTween = (d) => {
+      const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+      return (t) => arc(interpolate(t));
     };
 
-    gui.add(chartControls, 'rotationSpeed', 0, 0.05);
-    gui.add(chartControls, 'height', 0.1, 5).onChange(value => {
-      scene.children.forEach(child => {
-        if (child.type === 'Mesh') {
-          child.scale.y = value / height;
+    // Function to handle section clicks
+    const handleSectionClick = (event, d) => {
+      // Update only the clicked section's value
+      const newData = data.map(item => {
+        if (item.id === d.data.id) {
+          return {
+            ...item,
+            value: Math.random() * 100
+          };
         }
+        return item;
       });
+      setData(newData);
+    };
+
+    // Create the chart sections with animations and interactions
+    const paths = svg.selectAll("path")
+        .data(pie(data))
+        .enter()
+        .append("g")
+        .attr("class", "slice");
+
+    // Add the paths (sections)
+    paths.append("path")
+        .attr("fill", d => d.data.color)
+        .style("stroke", "#fff")
+        .style("stroke-width", "2px")
+        .style("cursor", "pointer")
+        .transition()
+        .duration(1000)
+        .attrTween("d", arcTween);
+
+    // Add labels
+    paths.append("text")
+        .attr("transform", d => {
+          const pos = arc.centroid(d);
+          return `translate(${pos[0]}, ${pos[1]})`;
+        })
+        .attr("dy", ".35em")
+        .style("text-anchor", "middle")
+        .style("fill", "#fff")
+        .style("pointer-events", "none")
+        .text(d => d.data.label);
+
+    // Add click handlers
+    paths.select("path")
+        .on("click", handleSectionClick)
+        .on("mouseover", function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("d", d3.arc()
+              .innerRadius(radius * 0.6)
+              .outerRadius(radius * 1.1)
+            );
+        })
+        .on("mouseout", function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("d", arc);
+        });
+
+    // Add legend
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${radius + 30}, ${-radius + 20})`);
+
+    data.forEach((item, i) => {
+      const legendRow = legend.append("g")
+          .attr("transform", `translate(0, ${i * 20})`);
+      
+      legendRow.append("rect")
+          .attr("width", 10)
+          .attr("height", 10)
+          .attr("fill", item.color);
+
+      legendRow.append("text")
+          .attr("x", 20)
+          .attr("y", 10)
+          .attr("text-anchor", "start")
+          .style("font-size", "12px")
+          .text(`${item.label}: ${Math.round(item.value)}%`);
     });
 
-    // Animation
-    const animate = () => {
-      requestAnimationFrame(animate);
-      
-      // Rotate the entire chart
-      scene.rotation.y += chartControls.rotationSpeed;
-      
-      controls.update();
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    // Handle window resize
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      mountRef.current?.removeChild(renderer.domElement);
-      gui.destroy();
-    };
-  }, []);
+  }, [data]);
 
   return (
-    <div 
-      ref={mountRef} 
-      style={{ 
-        width: "100vw",
-        height: "100vh",
-        margin: 0,
-        padding: 0,
-        overflow: 'hidden',
-        position: 'fixed',
-        top: 0,
-        left: 0
-      }}
-    />
+    <div style={{ 
+      width: "100%", 
+      height: "100vh", 
+      display: "flex", 
+      justifyContent: "center", 
+      alignItems: "center",
+      position: "relative"
+    }}>
+      <svg ref={svgRef}></svg>
+    </div>
   );
 };
+
 export default DashboardModel;

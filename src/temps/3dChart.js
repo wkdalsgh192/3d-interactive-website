@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import TWEEN from '@tweenjs/tween.js';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "dat.gui";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
@@ -66,6 +67,62 @@ export const render3dChart = (data, container) => {
     const fontLoader = new FontLoader();
     const textMaterial = new THREE.MeshStandardMaterial(0xffffff);
 
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    const HOVER_SCALE = 1.1;
+    const CLICK_OFFSET = 2; // How far the mesh pulls out when clicked
+    let selectedMesh = null; // Track currently selected mesh
+
+    const tweenGroup = new TWEEN.Group();
+    // Add click handler
+    const onClick = (event) => {
+      console.log("Click detected"); // Debug log
+
+      const rect = container.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children);
+
+      console.log("Intersects:", intersects); // Debug log
+
+      // Reset previous selection
+      if (selectedMesh) {
+        console.log("Resetting previous selection"); // Debug log
+        console.log("Previous mesh position:", selectedMesh.userData.originalPosition); // Debug log
+        // Animate back to original position
+        new TWEEN.Tween(selectedMesh.position, tweenGroup)  // Use the group
+        .to({ x: selectedMesh.userData.originalPosition.x }, 500)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .start();
+        selectedMesh = null;
+      }
+
+      if (intersects.length > 0) {
+        const intersectedObject = intersects[0].object;
+        console.log("Intersected object:", intersectedObject.userData.isChart); // Debug log
+        if (intersectedObject.userData.isChart) {
+          selectedMesh = intersectedObject;
+          
+          // Store original position if not already stored
+          if (!selectedMesh.userData.originalPosition) {
+            selectedMesh.userData.originalPosition = selectedMesh.position.clone();
+          }
+
+          console.log("current mesh position:", selectedMesh.userData.originalPosition); // Debug log
+
+          new TWEEN.Tween(selectedMesh.position, tweenGroup)  // Use the group
+          .to({ 
+            x: selectedMesh.userData.originalPosition.x - CLICK_OFFSET
+          }, 1000)
+          .easing(TWEEN.Easing.Quadratic.Out)
+          .start();
+        }
+      }
+    };
+
     for (let i = 0; i < svgList.length; ++i) {
       const svgData = loader.parse(svgList[i].outerHTML);
       const shape = svgData.paths[0].toShapes(true)[0];
@@ -81,10 +138,19 @@ export const render3dChart = (data, container) => {
       });
 
       let mesh = new THREE.Mesh(geometry2, cubeMaterial);
+      mesh.userData.isChart = true;
+      mesh.userData.index = i;
+      mesh.userData.originalPosition = mesh.position.clone();
       scene.add(mesh);
       mesh.scale.set(0.01, 0.01, 0.01);
       mesh.rotation.set(0, Math.PI, Math.PI);
-      mesh.position.set(0, 15, -10 + i / 3);
+      if (i === 0) {
+        mesh.position.set(0, 15, -10 + i / 3);
+      } else {
+        mesh.position.set(0, 15, -10 + i / 3);
+      }
+      // Store original position AFTER setting it
+      mesh.userData.originalPosition = mesh.position.clone();
 
       mesh.castShadow = true; //default is false
       mesh.receiveShadow = true;
@@ -193,9 +259,13 @@ export const render3dChart = (data, container) => {
     scene.add(spotLight2);
     scene.add(spotLight3);
 
+    // Add click event listener
+    container.addEventListener('click', onClick);
+
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
+      tweenGroup.update(); // Update all tweens
       controls.update();
       renderer.render(scene, camera);
     };
@@ -217,6 +287,7 @@ export const render3dChart = (data, container) => {
     // Cleanup function
     return () => {
       window.removeEventListener('resize', handleResize);
+      container.removeEventListener('click', onClick);
       container.removeChild(renderer.domElement);
       renderer.dispose();
     };

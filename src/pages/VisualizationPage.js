@@ -46,7 +46,7 @@ const VisualizationPage = () => {
   if (selectedModel) {
     const SelectedComponent = selectedModel.component;
     return (
-      <div>
+      <div style={{ width: '100%', height: '100vh' }}>
         <button 
           onClick={handleBack}
           style={{

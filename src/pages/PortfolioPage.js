@@ -4,12 +4,18 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import "./PortfolioPage.css";
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import ProjectModal from '../components/ProjectModal';
+import ProjectPopup from '../components/ProjectPopup';
+import { projectsData } from '../data/projectsData';
 
 const PortfolioPage = () => {
 
     const mountRef = useRef(null);
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedProject, setSelectedProject] = useState(null);
     
     // Add refs for the variables we need to access outside useEffect
     const boatRef = useRef(null);
@@ -66,10 +72,10 @@ const PortfolioPage = () => {
                 console.log('island loaded successfully');
                 island = gltf.scene;
                 gltf.scene.traverse(function(node) {
-                    // if (node.isMesh) { 
-                    //     node.castShadow = true;
-                    //     node.receiveShadow = true;
-                    // }
+                    if (node.isMesh) { 
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
                 });
                 // Add these lines to help position and scale the model if needed
                 island.scale.set(0.4, 0.4, 0.4);  // Adjust scale if needed
@@ -130,14 +136,32 @@ const PortfolioPage = () => {
                 console.error('An error happened while loading the boat:', error);
             });
 
+            let bird;
+            let mixer3;
+            let action3;
             gltfLoader.load(
                 '/assets/bird.glb', 
                 function(gltf) {
                     console.log('bird loaded successfully');
-                    const bird = gltf.scene;
-                    boatRef.current = bird;  // Store bird reference
+                    bird = gltf.scene;
                     
-                    // 🦜 크기 및 위치 조정
+                    // Log animations to check if they exist
+                    console.log('Available animations:', gltf.animations);
+                    
+                    mixer3 = new THREE.AnimationMixer(bird);
+                    action3 = mixer3.clipAction(gltf.animations[0]);
+                    
+                    // Set up proper looping
+                    action3.setLoop(THREE.LoopRepeat);  // Make sure it loops
+                    action3.clampWhenFinished = false;   // Don't clamp at the end
+                    action3.timeScale = 1;               // Normal speed
+                    action3.play();
+
+                    // Log animation details
+                    console.log("Animation Duration:", action3.getClip().duration);
+                    console.log("Loop Mode:", action3.loop);
+                    
+                    // Rest of your bird setup code...
                     bird.scale.set(0.5, 0.5, 0.5);
                     bird.position.set(0, 5, 10);
             
@@ -146,14 +170,6 @@ const PortfolioPage = () => {
                         bird.children[0].rotation.set(Math.PI/2, Math.PI, 0);  // 180도 회전
                     }
             
-                    // 🏃‍♂️ 애니메이션 설정
-                    if (gltf.animations && gltf.animations.length) {
-                        mixer2 = new THREE.AnimationMixer(bird);
-                        const action2 = mixer2.clipAction(gltf.animations[0]);
-                        action2.timeScale = 1;  
-                        action2.play();
-                    }
-                    
                     // 🌟 그림자 설정
                     gltf.scene.traverse(function(node) {
                         if (node.isMesh) { 
@@ -284,10 +300,20 @@ const PortfolioPage = () => {
         // const getWaterHeightAt = (x, z) => {
         //     return Math.sin(x * 0.3) * 0.5 + Math.cos(z * 0.2) * 0.5;
         // };
-        const clock = new THREE.Clock(); 
+        const clock = new THREE.Clock();
         const animate = () => {
             // Update controls
             controls.update()
+
+            spotLight.position.x = Math.sin(azimuthalAngle) * 12.4;
+            spotLight.position.z = Math.cos(azimuthalAngle) * 12.4;
+            spotLight.target.position.x = Math.sin(azimuthalAngle) * 9;
+            spotLight.target.position.z = Math.cos(azimuthalAngle) * 9;
+
+            const delta = clock.getDelta();  // Get delta time once
+            const elapsedTime = clock.getElapsedTime();
+
+            if (mixer3) mixer3.update(delta);
 
             // Update cyclist position
             azimuthalAngle = controls.getAzimuthalAngle();
@@ -296,29 +322,23 @@ const PortfolioPage = () => {
                 cyclePos = 0.5 + ( 0.5 + cyclePos);
             }
 
-            spotLight.position.x = Math.sin(azimuthalAngle) * 12.4;
-            spotLight.position.z = Math.cos(azimuthalAngle) * 12.4;
-            spotLight.target.position.x = Math.sin(azimuthalAngle) * 9;
-            spotLight.target.position.z = Math.cos(azimuthalAngle) * 9;
-
-            const elapsedTime = clock.getElapsedTime();
-
-            if ( boatRef.current ) {
-                boatRef.current.position.x = Math.sin(azimuthalAngle) * 11.4;
-                boatRef.current.position.z = Math.cos(azimuthalAngle) * 11.4;
-                boatRef.current.rotation.y = azimuthalAngle - Math.PI/2;
+            if ( bird ) {
+                bird.position.x = Math.sin(azimuthalAngle) * 11.4;
+                bird.position.z = Math.cos(azimuthalAngle) * 11.4;
+                bird.rotation.y = azimuthalAngle - Math.PI/2;
 
                 // // 🌊 물 높이를 계산하여 보트 높이 조정
                 // const waterHeight = getWaterHeightAt(boatRef.current.position.x, boatRef.current.position.z);
                 // boatRef.current.position.y = 2.2 - (waterHeight / 2.2);
                 // console.log(waterHeight);
-
-                // Rolling effect
-                boatRef.current.rotation.z = Math.sin(elapsedTime * 3) * 0.1; // 진폭 0.1, 주파수 3
                 
                 // Update popup position
                 updatePopupPosition();
             }
+
+            // Rolling effect
+            if (boat) boat.rotation.z = Math.sin(elapsedTime * 2) * 0.05; // 진폭 0.1, 주파수 3
+            
             renderer.render(scene, camera);
             // console.log("azimuthalAngle: ", azimuthalAngle);
             
@@ -355,140 +375,36 @@ const PortfolioPage = () => {
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <canvas ref={mountRef} style={{ width: "100vw", height: "100vh" }} />
-            <div 
-                className="popup project"
-                style={{
-                    position: 'absolute',
-                    left: '20%',  // Offset to the left
-                }}
-            >
-                <div className="content">
-                    <img 
-                        className="thumbnail" 
-                        src="https://cdn.sanity.io/images/jidqpryp/production/645a401b93a88802f8808d7f7e5a22e8fd56248e-160x160.jpg" 
-                        alt="Project thumbnail"
-                    />
-                    <div className="text">
-                        <h2 className="projecttitle">Thank You for Applying</h2>
-                        <p className="subtitle">A critical look at AI hiring systems.</p>
-                    </div>
-                </div>
-                <button 
-                    className="button primary"
-                    onClick={() => setIsModalOpen(true)}
-                >
-                    View Master Thesis <i className="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-            <div 
-                className="popup project"
-                style={{
-                    position: 'absolute',
-                    left: '80%',  // Offset to the right
-                }}
-            >
-            <div className="content">
-                <img 
-                    className="thumbnail" 
-                    src="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg" 
-                    alt="Project thumbnail"
-                />
-                <div className="text">
-                    <h2 className="projecttitle">Seismic Tension</h2>
-                    <p className="subtitle">An engaging exhibit about seismologic research.</p>
-                </div>
-            </div>
-            <button className="button primary">
-                View Bachelor Thesis <i className="fa-solid fa-arrow-right"></i>
-            </button>
-            </div>
-            <div 
-                className="popup project"
-                style={{
-                    position: 'absolute',
-                    left: '50%',  // Offset to the right
-                }}
-            >
-                <div className="content">
-                    <img 
-                        className="thumbnail" 
-                        src="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg" 
-                        alt="Project thumbnail"
-                    />
-                    <div className="text">
-                        <h2 className="projecttitle">Seismic Tension</h2>
-                        <p className="subtitle">An engaging exhibit about seismologic research.</p>
-                    </div>
-                </div>
-                <button className="button primary">
-                    View Bachelor Thesis <i className="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
+            
+            <ProjectPopup 
+                position="20%"
+                thumbnail="https://cdn.sanity.io/images/jidqpryp/production/645a401b93a88802f8808d7f7e5a22e8fd56248e-160x160.jpg"
+                title="3D Graphics"
+                subtitle="Advanced 3D Graphics rendering techniques."
+                onClickView={() => setSelectedProject('graphics3d')}
+            />
 
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="modal" style={{ display: 'block' }}>
-                    <div 
-                        className="header" 
-                        style={{
-                            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgb(0, 0, 0)), 
-                            url("https://cdn.sanity.io/images/jidqpryp/production/9cf961647a099a6444ac90cc57a363014ea0b0d5-1920x1280.jpg")`
-                        }}
-                    >
-                        <div className="header-wrapper">
-                            <div className="title projectheadline">Seismic Tension</div>
-                        </div>
-                        <div className="button-round close" onClick={() => setIsModalOpen(false)}>
-                            <i className="icon fa-solid fa-xmark fa-xl"></i>
-                        </div>
-                    </div>
-                    <div className="modal-content-wrapper">
-                        <h1 className="modal-subtitle">An engaging exhibit about seismologic research.</h1>
-                        <div className="embed-container">
-                            <iframe 
-                                className="video" 
-                                src="https://player.vimeo.com/video/190451314?h=5b038d6e31" 
-                                width="640" 
-                                height="360" 
-                                frameBorder="0" 
-                                allowFullScreen
-                                title="Seismic Tension Video"
-                            ></iframe>
-                        </div>
-                        <h1>Challenge</h1>
-                        <p2>In my Bachelor Thesis, I collaborated with seismologists from the Future Ocean Cluster to present their field of research in an exhibition situation. The goal was to convey their work to the public in an engaging way.</p2>
-                        <img 
-                            className="project-img" 
-                            src="https://cdn.sanity.io/images/jidqpryp/production/9cf961647a099a6444ac90cc57a363014ea0b0d5-1920x1280.jpg"
-                            alt="Project"
-                        />
-                        <img 
-                            className="project-img" 
-                            src="https://cdn.sanity.io/images/jidqpryp/production/7bdea3bb5539d89301168ffd976d3bae73c341fd-1920x1280.jpg"
-                            alt="Project"
-                        />
-                        <h1>Result</h1>
-                        <p2>The result is an exhibit showing live seismic activity in the Los Angeles Basin, inspired by old-fashioned seismographs. By interpreting live data from an online database, earthquakes can be displayed on a three-dimensional model of the area. If high seismic activity occurs, the surface of the object begins to move accordingly and the magnitude is displayed in a graphical representation. In this way, viewers can monitor the seismic activity and are given an understanding of the scientific research work.</p2>
-                        <img 
-                            className="project-img" 
-                            src="https://cdn.sanity.io/images/jidqpryp/production/3f6530952d4b30cb58a66375a180ddb0cf95db8d-1920x1403.jpg"
-                            alt="Project"
-                        />
-                        <img 
-                            className="project-img" 
-                            src="https://cdn.sanity.io/images/jidqpryp/production/9c6b092c8ec231cb8b0675e483dbee407efe6a0d-1080x925.jpg"
-                            alt="Project"
-                        />
-                        <div className="credits">
-                            <p className="credit">Nominated for the Muthesius Award 2018</p>
-                            <p className="credit">Collaborator: Future Ocean Cluster</p>
-                            <p className="credit">Supervisor: Prof. Tom Duscher</p>
-                            <p className="credit">My Role: Concept, Design, Implementation</p>
-                            <p className="credit">Bachelor Thesis 2016</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ProjectPopup 
+                position="50%"
+                thumbnail="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg"
+                title="Interactive Visualization"
+                subtitle="An series of experiments with interactive visualizations."
+                onClickView={() => setSelectedProject('interactiveViz')}
+            />
+
+            <ProjectPopup 
+                position="80%"
+                thumbnail="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg"
+                title="Web Development"
+                subtitle="An engaging exhibit about seismologic research."
+                onClickView={() => {}}
+            />
+
+            <ProjectModal 
+                isOpen={!!selectedProject}
+                onClose={() => setSelectedProject(null)}
+                {...(selectedProject ? projectsData[selectedProject] : {})}
+            />
         </div>
     );
 }
