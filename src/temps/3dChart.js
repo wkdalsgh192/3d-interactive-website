@@ -74,11 +74,32 @@ export const render3dChart = (data, container) => {
     const CLICK_OFFSET = 2; // How far the mesh pulls out when clicked
     let selectedMesh = null; // Track currently selected mesh
 
-    const tweenGroup = new TWEEN.Group();
-    // Add click handler
-    const onClick = (event) => {
-      console.log("Click detected"); // Debug log
+    const dataDisplay = document.createElement('div');
+    dataDisplay.style.cssText = `
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        top: 50%;
+        right: 10%;
+        transform: translateY(-50%);
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 8px;
+        font-size: 24px;
+        pointer-events: none;
+        display: none;
+        z-index: 100;
+        transition: all 0.3s ease;
+        max-width: 300px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    `;
+    container.appendChild(dataDisplay);
 
+    // Create a TWEEN group
+    const tweenGroup = new TWEEN.Group();
+
+    const onClick = (event) => {
       const rect = container.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
       mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
@@ -86,23 +107,19 @@ export const render3dChart = (data, container) => {
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(scene.children);
 
-      console.log("Intersects:", intersects); // Debug log
-
       // Reset previous selection
       if (selectedMesh) {
-        console.log("Resetting previous selection"); // Debug log
-        console.log("Previous mesh position:", selectedMesh.userData.originalPosition); // Debug log
         // Animate back to original position
-        new TWEEN.Tween(selectedMesh.position, tweenGroup)  // Use the group
+        new TWEEN.Tween(selectedMesh.position, tweenGroup)
         .to({ x: selectedMesh.userData.originalPosition.x }, 500)
         .easing(TWEEN.Easing.Quadratic.Out)
         .start();
         selectedMesh = null;
+        dataDisplay.style.display = 'none';
       }
 
       if (intersects.length > 0) {
         const intersectedObject = intersects[0].object;
-        console.log("Intersected object:", intersectedObject.userData.isChart); // Debug log
         if (intersectedObject.userData.isChart) {
           selectedMesh = intersectedObject;
           
@@ -111,14 +128,35 @@ export const render3dChart = (data, container) => {
             selectedMesh.userData.originalPosition = selectedMesh.position.clone();
           }
 
-          console.log("current mesh position:", selectedMesh.userData.originalPosition); // Debug log
+          console.log(selectedMesh.userData);
+          // Show data for the selected country
+          const countryData = data[selectedMesh.userData.index];
+          const popuCount = countryData["Values"][57]["Count"];
+          const popuCountFormatted = (popuCount / 1000000).toFixed(2) + "M";
 
-          new TWEEN.Tween(selectedMesh.position, tweenGroup)  // Use the group
-          .to({ 
-            x: selectedMesh.userData.originalPosition.x - CLICK_OFFSET
-          }, 1000)
-          .easing(TWEEN.Easing.Quadratic.Out)
-          .start();
+          // Update the data display
+          dataDisplay.innerHTML = `
+            <h3 style="margin: 0 0 12px 0; color: #fff; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">
+              ${countryData.Country}
+            </h3>
+            <div style="margin-bottom: 8px; font-size: 16px;">
+              Population: <strong>${popuCountFormatted}</strong>
+            </div>
+            <div style="font-size: 12px; color: #aaa; margin-top: 12px;">
+              Click anywhere else to close
+            </div>
+          `;
+
+          // Show the display
+          dataDisplay.style.display = 'block';
+
+          // Animate to pulled out position
+          new TWEEN.Tween(selectedMesh.position, tweenGroup)
+            .to({ x: selectedMesh.userData.originalPosition.x - CLICK_OFFSET }, 1000)
+            .easing(TWEEN.Easing.Quadratic.Out)
+            .start();
+        } else {
+          dataDisplay.style.display = 'none';
         }
       }
     };
@@ -171,22 +209,6 @@ export const render3dChart = (data, container) => {
         scene.add(textMesh);
       });
 
-      fontLoader.load("/fonts/ibm_plex.json", (font) => {
-        const popuCount = data[i]["Values"][57]["Count"];
-        const popuCountFormatted = (popuCount / 1000000).toFixed(2) + "M";
-
-        const textGeometry = new TextGeometry(popuCountFormatted.toString(), {
-          font: font,
-          size: 0.18,
-          depth: 0.01,
-          curveSegments: 1,
-        });
-
-        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-        textMesh.position.set(5, Math.pow(popuCount / 150000, 0.3), -10 + i / 3);
-        scene.add(textMesh);
-      });
     }
 
     const allPoints = [
@@ -265,7 +287,7 @@ export const render3dChart = (data, container) => {
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
-      tweenGroup.update(); // Update all tweens
+      tweenGroup.update(); // Update our specific group
       controls.update();
       renderer.render(scene, camera);
     };

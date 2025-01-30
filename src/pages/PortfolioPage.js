@@ -273,15 +273,15 @@ const PortfolioPage = () => {
         // const helper2 = new THREE.CameraHelper( spotLight.shadow.camera );
         // scene.add( helper2 );
         // Add these after scene creation
-        const axesHelper = new THREE.AxesHelper(5);  // Shows X (red), Y (green), Z (blue) axes
-        scene.add(axesHelper);
+        // const axesHelper = new THREE.AxesHelper(5);  // Shows X (red), Y (green), Z (blue) axes
+        // scene.add(axesHelper);
 
-        const gridHelper = new THREE.GridHelper(10, 10);  // Shows a 10x10 grid on the ground
-        scene.add(gridHelper);
+        // const gridHelper = new THREE.GridHelper(10, 10);  // Shows a 10x10 grid on the ground
+        // scene.add(gridHelper);
 
         // Optional: Add camera helper to see camera's position and view
-        const cameraHelper = new THREE.CameraHelper(camera);
-        scene.add(cameraHelper);
+        // const cameraHelper = new THREE.CameraHelper(camera);
+        // scene.add(cameraHelper);
 
         // Cursor
         const cursor = {
@@ -298,16 +298,13 @@ const PortfolioPage = () => {
          * Animate
          */
         let azimuthalAngle;
-        let cyclePos = 0;
+        let birdPos = 0;
         let i = 0;
         let g = 0.8;
 
         const popups = document.getElementsByClassName("popup");
-        // 🌊 물 높이를 계산하는 함수 (예제: sine 함수 기반 물결)
-        // const getWaterHeightAt = (x, z) => {
-        //     return Math.sin(x * 0.3) * 0.5 + Math.cos(z * 0.2) * 0.5;
-        // };
         const clock = new THREE.Clock();
+
         const animate = () => {
             // Update controls
             controls.update()
@@ -324,9 +321,21 @@ const PortfolioPage = () => {
 
             // Update cyclist position
             azimuthalAngle = controls.getAzimuthalAngle();
-            cyclePos = azimuthalAngle / (Math.PI*2);
-            if ( cyclePos < 0 ) {
-                cyclePos = 0.5 + ( 0.5 + cyclePos);
+            
+            birdPos = azimuthalAngle / (Math.PI*2);
+            if ( birdPos < 0 ) {
+                birdPos = 0.5 + ( 0.5 + birdPos);
+            }
+
+            for (let i = 0; i < popups.length; i++ ){
+                if (birdPos >= 0.025 + i/popups.length && birdPos < 0.08 + i/popups.length) {
+                    popups[i].classList.remove("hidden");
+                    popups[i].classList.add("visible");
+                }
+                else {
+                    popups[i].classList.add("hidden");
+                    popups[i].classList.remove("visible");
+                }
             }
 
             if ( bird ) {
@@ -334,13 +343,6 @@ const PortfolioPage = () => {
                 bird.position.z = Math.cos(azimuthalAngle) * 11.4;
                 bird.rotation.y = azimuthalAngle - Math.PI/2;
 
-                // // 🌊 물 높이를 계산하여 보트 높이 조정
-                // const waterHeight = getWaterHeightAt(boatRef.current.position.x, boatRef.current.position.z);
-                // boatRef.current.position.y = 2.2 - (waterHeight / 2.2);
-                // console.log(waterHeight);
-                
-                // Update popup position
-                updatePopupPosition();
             }
 
             // Rolling effect
@@ -362,29 +364,12 @@ const PortfolioPage = () => {
         };
     }, [])
 
-    const updatePopupPosition = () => {
-        if (boatRef.current) {
-            // Get the position vector of the boat
-            const vector = new THREE.Vector3();
-            boatRef.current.getWorldPosition(vector);
-            
-            // Project the 3D position to 2D screen space
-            vector.project(cameraRef.current);
-            
-            // Convert to screen coordinates
-            const x = (vector.x * 0.5 + 0.5) * sizesRef.current.width;
-            const y = (-vector.y * 0.5 + 0.5) * sizesRef.current.height;
-            
-            setPopupPosition({ x, y });
-        }
-    };
-
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <canvas ref={mountRef} style={{ width: "100vw", height: "100vh" }} />
             
             <ProjectPopup 
-                position="20%"
+                position="50%"
                 thumbnail="https://cdn.sanity.io/images/jidqpryp/production/645a401b93a88802f8808d7f7e5a22e8fd56248e-160x160.jpg"
                 title="Web Development"
                 subtitle="An engaging exhibit about seismologic research."
@@ -400,7 +385,7 @@ const PortfolioPage = () => {
             />
 
             <ProjectPopup 
-                position="80%"
+                position="50%"
                 thumbnail="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg"
                 title="Interactive Visualization"
                 subtitle="An series of experiments with interactive visualizations."
