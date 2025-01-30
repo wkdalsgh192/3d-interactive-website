@@ -7,6 +7,7 @@ import VisualizationPage from "./pages/VisualizationPage";
 import DatabasePage from "./pages/DatabasePage";
 import SettingsPage from "./pages/SettingsPage";
 import PortfolioPage from "./pages/PortfolioPage";
+import ProceduralScene from "./pages/ProceduralScene";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/visualization" element={<VisualizationPage />} />
           <Route path="/database" element={<DatabasePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/procedural-scene" element={<ProceduralScene />} />
         </Routes>
       </Box>
     </Box>

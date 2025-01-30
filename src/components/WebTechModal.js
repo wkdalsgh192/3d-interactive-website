@@ -59,7 +59,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
                     />
                     
                     <h1>Building a Scalable Data Pipeline for AI</h1>
-                    <p2>As the system expanded, AI workloads required a unified data processing framework for images, multimedia, and labeled data. I refactored the legacy pipeline architecture, enabling seamless file conversions and processing, handling 10 billion multimedia files with a 97% success rate.</p2>
+                    <p2>As the system expanded, AI workloads required a unified data processing framework for images, multimedia, and labeled data. I refactored the legacy pipeline architecture, enabling seamless file conversions and processing, handling 10 billion multimedia files with a 98.7% success rate.</p2>
 
                     <Swiper
                         modules={[Navigation, Pagination]}
@@ -71,9 +71,13 @@ const ProjectModal = ({ isOpen, onClose }) => {
                     >
                         {[
                             {
-                                url: "/images/multi-media-architecture.png",
+                                url: "/images/architecture1.png",
                                 alt: "Multi Media Architecture"
                             },
+                            {
+                                url: "/images/architecture2.png",
+                                alt: "Multi Media Architecture"
+                            }
                             
                             // Add more images as needed
                         ].map((img, index) => (

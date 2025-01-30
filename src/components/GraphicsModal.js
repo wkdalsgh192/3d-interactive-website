@@ -1,12 +1,19 @@
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { useNavigate } from 'react-router-dom';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';        
 
 const GraphicsModal = ({ isOpen, onClose }) => {
+    const navigate = useNavigate();
+
     if (!isOpen) return null;
+
+    const handleNavigate = () => {
+        navigate('/procedural-scene'); // Navigate to the procedural scene page
+    };
 
     return (
         <>
@@ -108,6 +115,22 @@ const GraphicsModal = ({ isOpen, onClose }) => {
                             boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
                         }}
                     />
+
+                    <button 
+                        onClick={handleNavigate} 
+                        style={{
+                            padding: '10px 20px',
+                            marginTop: '20px',
+                            backgroundColor: '#007BFF',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '16px'
+                        }}
+                    >
+                        Explore Procedural Scene
+                    </button>
                 </div>
             </div>
         </>
