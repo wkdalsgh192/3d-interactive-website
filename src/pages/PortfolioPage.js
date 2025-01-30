@@ -7,8 +7,10 @@ import "./PortfolioPage.css";
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import ProjectModal from '../components/ProjectModal';
 import ProjectPopup from '../components/ProjectPopup';
+import WebTechModal from '../components/WebTechModal';
+import GraphicsModal from '../components/GraphicsModal';
+import DataVisualsModal from '../components/DataVisualsModal';
 import { projectsData } from '../data/projectsData';
 
 const PortfolioPage = () => {
@@ -24,6 +26,11 @@ const PortfolioPage = () => {
         width: window.innerWidth,
         height: window.innerHeight
     });
+
+    // Separate state for each modal
+    const [showWebTechModal, setShowWebTechModal] = useState(false);
+    const [showGraphicsModal, setShowGraphicsModal] = useState(false);
+    const [showDataVisualsModal, setShowDataVisualsModal] = useState(false);
 
     useEffect(() => {
         if (!mountRef.current) return;
@@ -379,31 +386,41 @@ const PortfolioPage = () => {
             <ProjectPopup 
                 position="20%"
                 thumbnail="https://cdn.sanity.io/images/jidqpryp/production/645a401b93a88802f8808d7f7e5a22e8fd56248e-160x160.jpg"
-                title="3D Graphics"
-                subtitle="Advanced 3D Graphics rendering techniques."
-                onClickView={() => setSelectedProject('graphics3d')}
+                title="Web Development"
+                subtitle="An engaging exhibit about seismologic research."
+                onClickView={() => setShowWebTechModal(true)}
             />
 
             <ProjectPopup 
                 position="50%"
                 thumbnail="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg"
-                title="Interactive Visualization"
-                subtitle="An series of experiments with interactive visualizations."
-                onClickView={() => setSelectedProject('interactiveViz')}
+                title="3D Graphics"
+                subtitle="Advanced 3D Graphics rendering techniques."
+                onClickView={() => setShowGraphicsModal(true)}
             />
 
             <ProjectPopup 
                 position="80%"
                 thumbnail="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg"
-                title="Web Development"
-                subtitle="An engaging exhibit about seismologic research."
-                onClickView={() => {}}
+                title="Interactive Visualization"
+                subtitle="An series of experiments with interactive visualizations."
+                onClickView={() => setShowDataVisualsModal(true)}
             />
 
-            <ProjectModal 
-                isOpen={!!selectedProject}
-                onClose={() => setSelectedProject(null)}
-                {...(selectedProject ? projectsData[selectedProject] : {})}
+            {/* Render all modals with their respective state */}
+            <WebTechModal 
+                isOpen={showWebTechModal}
+                onClose={() => setShowWebTechModal(false)}
+            />
+            
+            <GraphicsModal 
+                isOpen={showGraphicsModal}
+                onClose={() => setShowGraphicsModal(false)}
+            />
+            
+            <DataVisualsModal 
+                isOpen={showDataVisualsModal}
+                onClose={() => setShowDataVisualsModal(false)}
             />
         </div>
     );
