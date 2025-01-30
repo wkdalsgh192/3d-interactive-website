@@ -227,7 +227,7 @@ const PortfolioPage = () => {
         scene.background = new THREE.Color('#87CEEB');
 
         renderer.outputEncoding = THREE.SRGBColorSpace;
-        renderer.shadowMap.enabled = false;
+        renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.VSMShadowMap;
 
         // Lights
@@ -270,18 +270,13 @@ const PortfolioPage = () => {
         scene.add( spotLight );
         scene.add( spotLight.target );
 
-        // const helper2 = new THREE.CameraHelper( spotLight.shadow.camera );
-        // scene.add( helper2 );
-        // Add these after scene creation
-        // const axesHelper = new THREE.AxesHelper(5);  // Shows X (red), Y (green), Z (blue) axes
-        // scene.add(axesHelper);
+        scene.traverse((object) => {
+            if (object.isMesh) {
+                object.castShadow = true; // Enable shadow casting
+                object.receiveShadow = true; // Enable shadow receiving
+            }
+        });
 
-        // const gridHelper = new THREE.GridHelper(10, 10);  // Shows a 10x10 grid on the ground
-        // scene.add(gridHelper);
-
-        // Optional: Add camera helper to see camera's position and view
-        // const cameraHelper = new THREE.CameraHelper(camera);
-        // scene.add(cameraHelper);
 
         // Cursor
         const cursor = {
@@ -372,13 +367,13 @@ const PortfolioPage = () => {
                 position="50%"
                 thumbnail="https://cdn.sanity.io/images/jidqpryp/production/645a401b93a88802f8808d7f7e5a22e8fd56248e-160x160.jpg"
                 title="Web Development"
-                subtitle="An engaging exhibit about seismologic research."
+                subtitle="A series of projects that showcase my web development skills."
                 onClickView={() => setShowWebTechModal(true)}
             />
 
             <ProjectPopup 
                 position="50%"
-                thumbnail="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg"
+                thumbnail="/images/toon-shaded-mongky.png"
                 title="3D Graphics"
                 subtitle="Advanced 3D Graphics rendering techniques."
                 onClickView={() => setShowGraphicsModal(true)}
@@ -386,9 +381,9 @@ const PortfolioPage = () => {
 
             <ProjectPopup 
                 position="50%"
-                thumbnail="https://cdn.sanity.io/images/jidqpryp/production/ebf9aeb33aa30583baebb61989b6647ca6bae174-160x160.jpg"
+                thumbnail="/images/3d-population-preview.png"
                 title="Interactive Visualization"
-                subtitle="An series of experiments with interactive visualizations."
+                subtitle="A series of experiments with interactive visualizations."
                 onClickView={() => setShowDataVisualsModal(true)}
             />
 

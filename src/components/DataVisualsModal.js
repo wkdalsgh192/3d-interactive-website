@@ -1,7 +1,15 @@
-import DashboardModel from '../models/DashboardModel';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const DataVisualsModal = ({ isOpen, onClose }) => {
+    const navigate = useNavigate(); // Initialize useHistory
+    
     if (!isOpen) return null;
+
+    const handleNavigate = () => {
+        navigate('/visualization'); // Navigate to the visualization page
+    };
+
 
     return (
         <>
@@ -46,6 +54,22 @@ const DataVisualsModal = ({ isOpen, onClose }) => {
                     
                     <h1>Exploring Interactive 3D Data Visualization</h1>
                     <p2> Inspired by the limitations of traditional dashboards, I started a side project to explore interactive 3D charts, experimenting with new ways to visually represent complex datasets.</p2>
+                
+                    <button 
+                        onClick={handleNavigate} 
+                        style={{
+                            padding: '10px 20px',
+                            marginTop: '20px',
+                            backgroundColor: '#007BFF',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '16px'
+                        }}
+                    >
+                        Go to Visualization
+                    </button>
                 </div>
         </div>
         </>
