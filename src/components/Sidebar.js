@@ -2,11 +2,6 @@ import React, { useState } from "react";
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Divider, IconButton } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
-import StorageIcon from '@mui/icons-material/Storage';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import BarChartIcon from "@mui/icons-material/BarChart";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -65,10 +60,7 @@ const Sidebar = () => {
         <List>
           {[
             { text: "Home", icon: <HomeIcon />, path: "/" },
-            { text: "Graphics", icon: <SmartToyIcon />, path: "/dashboard" },
-            { text: "Visualization", icon: <DataThresholdingIcon />, path: "/visualization" },
-            { text: "Database", icon: <StorageIcon />, path: "/database" },
-            { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
+            { text: "Legal", icon: <SettingsIcon />, path: "/legal" },
           ].map((item) => (
             <ListItem 
               button 

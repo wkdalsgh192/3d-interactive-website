@@ -7,7 +7,6 @@ const PortfolioContainer = () => {
   const [startAnimation, setStartAnimation] = useState(false); // Triggers animation in PortfolioPage
 
   const handleStartClick = () => {
-    console.log("handleStartClick");
     setShowPortfolio(true);  // Show PortfolioPage when user clicks the button
     setStartAnimation(true); // Trigger animation in PortfolioPage
   };

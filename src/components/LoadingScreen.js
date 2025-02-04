@@ -34,7 +34,8 @@ const LoadingScreen = ({ onStartClick }) => {
         </div>
         <div style={{ textAlign: 'center', flexGrow: 1, marginBottom: '20px' }}>
           <h1 style={{ margin: '10px 0', fontSize: '64px', fontWeight: 'bold' }}>I'm Minho, a software engineer</h1>
-          <h1 style={{ margin: '10px 0', fontSize: '72px', fontWeight: 'bold' }}>passionate about building scalable systems</h1>
+          <h1 style={{ margin: '10px 0', fontSize: '64px', fontWeight: 'bold' }}>who is passionate about </h1>
+          <h1 style={{ margin: '10px 0', fontSize: '64px', fontWeight: 'bold' }}>building scalable systems</h1>
         </div>
         {!completed ? (
           <div 

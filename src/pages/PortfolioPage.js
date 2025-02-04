@@ -24,46 +24,7 @@ const PortfolioPage = ({ startAnimation }) => {
     const tweenGroup = new TWEEN.Group();
 
     useEffect(() => {
-        if (startAnimation && cameraRef.current) {
-            console.log("Starting camera animation:", cameraRef.current.position);
-    
-            const tween = new TWEEN.Tween(cameraRef.current.position)
-                .to({ x: 0, y: 7, z: 15 }, 1000)
-                .easing(TWEEN.Easing.Cubic.Out)
-                .onStart(() => {
-                    console.log("Animation started", cameraRef.current.position);
-                })
-                .onComplete(() => {
-                    console.log("Animation completed", cameraRef.current.position);
-                })
-                .start();
-            tweenGroup.add(tween);
-        }
-    }, [startAnimation]);  // This ensures the tween triggers whenever startAnimation changes    
-
-    useEffect(() => {
         if (!mountRef.current) return;
-
-        
-        // if (startAnimation) {
-        //     console.log("Starting camera animation");
-        //     if (cameraRef.current) {
-        //         const tween = new TWEEN.Tween(cameraRef.current.position, tweenGroup)
-        //             .to({
-        //                 x: 0,
-        //                 y: 7,
-        //                 z: 15
-        //             }, 1000)
-        //             .easing(TWEEN.Easing.Cubic.Out)
-        //             .onStart(() => {
-        //                 console.log("Animation started", cameraRef.current.position);
-        //             })
-        //             .onComplete(() => {
-        //                 console.log("Animation completed", cameraRef.current.position);
-        //             })
-        //             .start();
-        //     }
-        // }
 
         /**
          * Loaders
@@ -159,13 +120,10 @@ const PortfolioPage = ({ startAnimation }) => {
             let mixer3;
             let action3;
             gltfLoader.load(
-                '/assets/bird.glb', 
+                '/assets/flamingo.glb', 
                 function(gltf) {
                     console.log('bird loaded successfully');
                     bird = gltf.scene;
-                    
-                    // Log animations to check if they exist
-                    console.log('Available animations:', gltf.animations);
                     
                     mixer3 = new THREE.AnimationMixer(bird);
                     action3 = mixer3.clipAction(gltf.animations[0]);
@@ -176,12 +134,8 @@ const PortfolioPage = ({ startAnimation }) => {
                     action3.timeScale = 1;               // Normal speed
                     action3.play();
 
-                    // Log animation details
-                    console.log("Animation Duration:", action3.getClip().duration);
-                    console.log("Loop Mode:", action3.loop);
-                    
                     // Rest of your bird setup code...
-                    bird.scale.set(0.5, 0.5, 0.5);
+                    bird.scale.set(0.01, 0.01, 0.01);
                     bird.position.set(0, 5, 10);
             
                     // 🔄 첫 번째 자식 객체에 회전 적용
@@ -222,7 +176,7 @@ const PortfolioPage = ({ startAnimation }) => {
 
         // Camera
         const camera = new THREE.PerspectiveCamera(48, sizes.width / sizes.height, 1, 90);
-        camera.position.set(0,30,30);
+        camera.position.set(0,20,36);
         cameraRef.current = camera;  // Store camera reference
         scene.add(camera);
         console.log(camera.rotation);
@@ -300,6 +254,24 @@ const PortfolioPage = ({ startAnimation }) => {
             }
         });
 
+        if (startAnimation) {
+            console.log("Starting camera animation:", camera.position);
+    
+            const tween = new TWEEN.Tween(camera.position)
+                .to({ x: 0, y: 8, z: 18 }, 1000)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .onStart(() => {
+                    console.log("Animation started", camera.position);
+                    controls.enabled = false;
+                })
+                .onComplete(() => {
+                    console.log("Animation completed", camera.position);
+                    controls.enabled = true;
+                })
+                .start();
+            tweenGroup.add(tween);
+        }
+
         // Render
         renderer.render(scene, camera)
 
@@ -369,7 +341,7 @@ const PortfolioPage = ({ startAnimation }) => {
             renderer.dispose();
             // Any other cleanup needed
         };
-    }, [])
+    }, [startAnimation])
 
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
