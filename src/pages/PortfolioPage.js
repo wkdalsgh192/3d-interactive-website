@@ -3,21 +3,15 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import TWEEN from '@tweenjs/tween.js';
 import "./PortfolioPage.css";
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import ProjectPopup from '../components/ProjectPopup';
-import WebTechModal from '../components/WebTechModal';
-import GraphicsModal from '../components/GraphicsModal';
-import DataVisualsModal from '../components/DataVisualsModal';
-import { projectsData } from '../data/projectsData';
 
-const PortfolioPage = () => {
+const PortfolioPage = ({ startAnimation }) => {
 
     const mountRef = useRef(null);
-    const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-    const [selectedProject, setSelectedProject] = useState(null);
     
     // Add refs for the variables we need to access outside useEffect
     const boatRef = useRef(null);
@@ -27,42 +21,61 @@ const PortfolioPage = () => {
         height: window.innerHeight
     });
 
-    // Separate state for each modal
-    const [showWebTechModal, setShowWebTechModal] = useState(false);
-    const [showGraphicsModal, setShowGraphicsModal] = useState(false);
-    const [showDataVisualsModal, setShowDataVisualsModal] = useState(false);
+    const tweenGroup = new TWEEN.Group();
+
+    useEffect(() => {
+        if (startAnimation && cameraRef.current) {
+            console.log("Starting camera animation:", cameraRef.current.position);
+    
+            const tween = new TWEEN.Tween(cameraRef.current.position)
+                .to({ x: 0, y: 7, z: 15 }, 1000)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .onStart(() => {
+                    console.log("Animation started", cameraRef.current.position);
+                })
+                .onComplete(() => {
+                    console.log("Animation completed", cameraRef.current.position);
+                })
+                .start();
+            tweenGroup.add(tween);
+        }
+    }, [startAnimation]);  // This ensures the tween triggers whenever startAnimation changes    
 
     useEffect(() => {
         if (!mountRef.current) return;
 
-        // Scene
-        const scene = new THREE.Scene();
-        const canvas = mountRef.current; // Use the existing canvas directly
-
-        // Sizes
-        const sizes = {
-            width: canvas.clientWidth,
-            height: canvas.clientHeight
-        }
-        sizesRef.current = sizes;
+        
+        // if (startAnimation) {
+        //     console.log("Starting camera animation");
+        //     if (cameraRef.current) {
+        //         const tween = new TWEEN.Tween(cameraRef.current.position, tweenGroup)
+        //             .to({
+        //                 x: 0,
+        //                 y: 7,
+        //                 z: 15
+        //             }, 1000)
+        //             .easing(TWEEN.Easing.Cubic.Out)
+        //             .onStart(() => {
+        //                 console.log("Animation started", cameraRef.current.position);
+        //             })
+        //             .onComplete(() => {
+        //                 console.log("Animation completed", cameraRef.current.position);
+        //             })
+        //             .start();
+        //     }
+        // }
 
         /**
          * Loaders
          */
         const loadingManager = new THREE.LoadingManager(
-            // Called when everything is loaded
             () => {
-                console.log('Loading complete!');
+              console.log('Loading complete!');
             },
-            // Called while loading is progressing
-            (itemUrl, itemsLoaded, itemsTotal) => {
-                console.log(`Loading file: ${itemUrl}. ${itemsLoaded} of ${itemsTotal} files.`);
-            },
-            // Called when loading has errors
             (url) => {
-                console.error('There was an error loading ' + url);
+              console.error('There was an error loading ' + url);
             }
-        );
+          );
 
         // Draco loader
         const dracoLoader = new DRACOLoader();
@@ -102,7 +115,6 @@ const PortfolioPage = () => {
 
         let boat;
         let mixer2;
-        let action2;
         gltfLoader.load(
             '/assets/boat2.glb', 
             function(gltf) {
@@ -195,15 +207,29 @@ const PortfolioPage = () => {
                 }
             );
 
+        
+        // Scene
+        const scene = new THREE.Scene();
+        const canvas = mountRef.current; // Use the existing canvas directly
+
+        // Sizes
+        const sizes = {
+            width: canvas.clientWidth,
+            height: canvas.clientHeight
+        }
+        sizesRef.current = sizes;
+
+
         // Camera
         const camera = new THREE.PerspectiveCamera(48, sizes.width / sizes.height, 1, 90);
-        camera.position.set(0,15,15);
+        camera.position.set(0,30,30);
         cameraRef.current = camera;  // Store camera reference
         scene.add(camera);
         console.log(camera.rotation);
 
         // Controls
         const controls = new OrbitControls(camera, canvas);
+        controls.enabled = false;
         controls.target.set(0,3,0);
         controls.enablePan = false;
         controls.minPolarAngle = Math.PI/2.4;
@@ -255,9 +281,6 @@ const PortfolioPage = () => {
         scene.add(sunLight);
         scene.add( sunLight.target );
 
-        // const helper = new THREE.CameraHelper( sunLight.shadow.camera );
-        // scene.add( helper );
-
         const spotLight = new THREE.SpotLight(0xffffff, 4, 6, Math.PI/4, 1, 1);
         spotLight.position.set( 0, 3.5, 0 );
         spotLight.visible = false;
@@ -277,15 +300,7 @@ const PortfolioPage = () => {
             }
         });
 
-
-        // Cursor
-        const cursor = {
-            x: 0,
-            y: 0
-        }
-
         // Render
-        // stats.begin()
         renderer.render(scene, camera)
 
         // Add animation loop at the end of useEffect (before the return statement)
@@ -294,22 +309,22 @@ const PortfolioPage = () => {
          */
         let azimuthalAngle;
         let birdPos = 0;
-        let i = 0;
-        let g = 0.8;
 
         const popups = document.getElementsByClassName("popup");
         const clock = new THREE.Clock();
 
         const animate = () => {
-            // Update controls
-            controls.update()
-
+            const delta = clock.getDelta();
+            
+            // Update controls and TWEEN
+            controls.update();
+            tweenGroup.update();   // Update your custom tween group (if used)
+            
             spotLight.position.x = Math.sin(azimuthalAngle) * 12.4;
             spotLight.position.z = Math.cos(azimuthalAngle) * 12.4;
             spotLight.target.position.x = Math.sin(azimuthalAngle) * 9;
             spotLight.target.position.z = Math.cos(azimuthalAngle) * 9;
 
-            const delta = clock.getDelta();  // Get delta time once
             const elapsedTime = clock.getElapsedTime();
 
             if (mixer3) mixer3.update(delta);
@@ -344,10 +359,7 @@ const PortfolioPage = () => {
             if (boat) boat.rotation.z = Math.sin(elapsedTime * 2) * 0.05; // 진폭 0.1, 주파수 3
             
             renderer.render(scene, camera);
-            // console.log("azimuthalAngle: ", azimuthalAngle);
-            
-            // Call tick again on the next frame
-            window.requestAnimationFrame(animate)
+            window.requestAnimationFrame(animate);
         };
 
         animate();
@@ -362,50 +374,8 @@ const PortfolioPage = () => {
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <canvas ref={mountRef} style={{ width: "100vw", height: "100vh" }} />
-            
-            <ProjectPopup 
-                position="50%"
-                thumbnail="https://cdn.sanity.io/images/jidqpryp/production/645a401b93a88802f8808d7f7e5a22e8fd56248e-160x160.jpg"
-                title="Web Development"
-                subtitle="A series of projects that showcase my web development skills."
-                onClickView={() => setShowWebTechModal(true)}
-            />
-
-            <ProjectPopup 
-                position="50%"
-                thumbnail="/images/toon-shaded-mongky.png"
-                title="3D Graphics"
-                subtitle="Advanced 3D Graphics rendering techniques."
-                onClickView={() => setShowGraphicsModal(true)}
-            />
-
-            <ProjectPopup 
-                position="50%"
-                thumbnail="/images/3d-population-preview.png"
-                title="Interactive Visualization"
-                subtitle="A series of experiments with interactive visualizations."
-                onClickView={() => setShowDataVisualsModal(true)}
-            />
-
-            {/* Render all modals with their respective state */}
-            <WebTechModal 
-                isOpen={showWebTechModal}
-                onClose={() => setShowWebTechModal(false)}
-            />
-            
-            <GraphicsModal 
-                isOpen={showGraphicsModal}
-                onClose={() => setShowGraphicsModal(false)}
-            />
-            
-            <DataVisualsModal 
-                isOpen={showDataVisualsModal}
-                onClose={() => setShowDataVisualsModal(false)}
-            />
         </div>
     );
 }
 
-
 export default PortfolioPage;
-
