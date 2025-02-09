@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Divider, IconButton } from "@mui/material";
-import { NavLink } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import SettingsIcon from "@mui/icons-material/Settings";
-import MenuIcon from "@mui/icons-material/Menu";
+import { NavLink } from "react-router-dom";
+import MenuButton from "./MenuButton"; // Import animated menu button
+import "./Sidebar.css";
 
-const drawerWidth = 240;
+export default function Sidebar() {
+  const [isExpanded, setIsExpanded] = useState(false);
 
-const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDrawer = () => {
@@ -15,75 +17,50 @@ const Sidebar = () => {
   };
 
   return (
-    <>
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        onClick={toggleDrawer}
-        sx={{
-          position: 'fixed',
-          left: '20px',
-          top: '20px',
-          zIndex: 1200,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(10px)',
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-          }
-        }}
-      >
-        <MenuIcon />
-      </IconButton>
+    <div className="sidebar-container">
+      {/* Menu Button (Always Visible) */}
+      <MenuButton isOpen={isExpanded} toggle={() => setIsExpanded(!isExpanded)} />
 
-      <Drawer
-        variant="temporary"
-        anchor="left"
-        open={isOpen}
-        onClose={toggleDrawer}
-        ModalProps={{
-          keepMounted: true,
-        }}
-        sx={{
-          '& .MuiDrawer-paper': { 
-            width: drawerWidth, 
-            boxSizing: 'border-box',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(10px)',
-          },
-          '& .MuiBackdrop-root': {
-            backgroundColor: 'transparent',
-          }
-        }}
+      {/* Sidebar (Shrinks Completely When Closed) */}
+      <motion.div
+        initial={{ width: "0px"}}
+        animate={{ 
+          width: isExpanded ? "270px" : "0px" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="sidebar"
       >
-        <Toolbar />
-        <Divider />
-        <List>
-          {[
-            { text: "Home", icon: <HomeIcon />, path: "/" },
-            { text: "Legal", icon: <SettingsIcon />, path: "/legal" },
-          ].map((item) => (
-            <ListItem 
-              button 
-              key={item.text} 
-              component={NavLink} 
-              to={item.path} 
-              onClick={toggleDrawer}
-              sx={{ 
-                textDecoration: "none", 
-                color: "inherit",
-                '&.active': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                }
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
-    </>
+        {isExpanded && (
+          <>
+          <h2></h2>
+          <List>
+            {[
+              { text: "Home", icon: <HomeIcon />, path: "/" },
+              { text: "About", icon: <SettingsIcon />, path: "/about" },
+              { text: "Legal", icon: <SettingsIcon />, path: "/legal" },
+              { text: "Patch Note", icon: <SettingsIcon />, path: "/patch-note" }
+            ].map((item) => (
+              <ListItem 
+                button 
+                key={item.text} 
+                component={NavLink} 
+                to={item.path} 
+                onClick={toggleDrawer}
+                sx={{ 
+                  textDecoration: "none", 
+                  color: "inherit",
+                  '&.active': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                  }
+                }}
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItem>
+            ))}
+          </List>
+          </>
+        )}
+      </motion.div>
+    </div>
   );
-};
-
-export default Sidebar;
+}
