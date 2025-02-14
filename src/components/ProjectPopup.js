@@ -16,7 +16,7 @@ const ProjectPopup = ({ position, thumbnail, title, subtitle, onClickView }) => 
                     alt="Project thumbnail"
                 />
                 <div className="text">
-                    <h2 className="projecttitle">{title}</h2>
+                    <h3 className="projecttitle">{title}</h3>
                     <p className="subtitle">{subtitle}</p>
                 </div>
             </div>

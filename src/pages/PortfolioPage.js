@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import ProjectPopup from '../components/ProjectPopup';
+import WebTechModal from "../components/WebTechModal";
 import TWEEN from '@tweenjs/tween.js';
 import "./PortfolioPage.css";
 import 'swiper/css';
@@ -20,6 +22,8 @@ const PortfolioPage = ({ startAnimation }) => {
         width: window.innerWidth,
         height: window.innerHeight
     });
+    
+    const [showWebTechModal, setShowWebTechModal] = useState(false);
 
     const tweenGroup = new TWEEN.Group();
 
@@ -346,6 +350,17 @@ const PortfolioPage = ({ startAnimation }) => {
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <canvas ref={mountRef} style={{ width: "100vw", height: "100vh" }} />
+            <ProjectPopup 
+                position="50%"
+                thumbnail="/images/notification_system.png"
+                title="Real-Time Multi-Channel Notification System"
+                subtitle="Enhancing Engagement and Reliability with Asynchronous Messaging"
+                onClickView={() => setShowWebTechModal(true)}
+            />
+            <WebTechModal 
+                isOpen={showWebTechModal}
+                onClose={() => setShowWebTechModal(false)}
+            />
         </div>
     );
 }
