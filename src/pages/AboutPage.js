@@ -26,13 +26,13 @@ const Legal = () => {
       <h1>I'm Minho, a software engineer who is passionate about building scalable systems</h1>
       <br /><br />
       <h2>
-        I have worked for and with
+        I have worked for
       </h2>
       <p>MIRIDIH</p>
       <br /><br />
 
       <h2>Education</h2>
-      <p>MS in Computer Science, University of Southern California (~Present)</p>
+      <p>MS in Computer Science, University of Southern California</p>
       <p>BS in Computer Science, Korea National University</p>
       <p>Bachelor of Politics, Korea University</p>
     </div>

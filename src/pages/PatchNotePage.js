@@ -19,25 +19,25 @@ const PatchNotePage = () => {
     <div style={containerStyle}>
       <nav>
         <p2>
-          <a href="/">Minho's</a> / Patch Note
+          <a href="/">Minho's</a> / Release Notes
         </p2>
       </nav>
 
       <h1>Get all the details about the latest feature releases, product improvements, and bug fixes of Minho's World.</h1>
       <br /><br />
-      <h2> &#x1F680; V1.1.0 (January 12, 2025) </h2>
+      <h2> 🚀 v0.1 (February 15, 2025) </h2>
       <ul>
-        <li>MS in Computer Science, University of Southern California (~Present)</li>
-        <li>BS in Computer Science, Korea National University</li>
-        <li>Bachelor of Politics, Korea University</li>
+        <li>Introduced a scalable notification system design project</li>
+        <li>Added About and Release Notes pages</li>
+        <li>Enhanced sidebar UI for a smoother transition</li>
       </ul>
       <br /><br />
 
-      <h2> &#x1F680; V1.0.0 (January 07, 2025) </h2>
+      <h2> 🚀 v0 (February 07, 2025) </h2>
       <ul>
-        <li>MS in Computer Science, University of Southern California (~Present)</li>
-        <li>BS in Computer Science, Korea National University</li>
-        <li>Bachelor of Politics, Korea University</li>
+        <li>Implemented interactive animations on the island, allowing users to explore with mouse movements</li>
+        <li>Added a loading screen for a seamless transition to the island</li>
+        <li>Integrated a 3D island into the website using WebGL</li>
       </ul>
       <br /><br />
     </div>

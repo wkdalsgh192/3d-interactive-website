@@ -46,7 +46,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
                         <h1>Requirements</h1>
                         <p2>A real-time multi-channel notification system must support email, SMS, push, and in-app notifications while ensuring seamless communication across diverse user segments.</p2>
                         <br/>
-                        <p2>Key features for reliable and efficient notifications include message prioritization, real-time processing, delivery tracking, retries, and API integration. <br/> Additionally, it should support template management, localization, and personalization to enhance user engagement.</p2>
+                        <p2>Key features for reliable and efficient notifications include message prioritization, real-time processing, delivery tracking, retries, and API integration. Additionally, it should support template management, localization, and personalization to enhance user engagement.</p2>
                     </div>
 
                     <div>
@@ -81,7 +81,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
                     
                     <div>
                         <h1>Outcome</h1>
-                        <p2>My asynchronous message processing pipeline reduced notification delays by 40% while improving delivery reliability. More importantly, maintenance costs remain minimal due to object encapsulation and dynamic configuration—no more code fixes for requirement changes!</p2>
+                        <p2>My asynchronous message processing pipeline successfully handled up to 1 million messages with high availability (99.9%), ensuring reliable delivery. More importantly, maintenance costs remain minimal due to object encapsulation and dynamic configuration—no more code fixes for requirement changes!</p2>
                     </div>
                 </div>
             </div>

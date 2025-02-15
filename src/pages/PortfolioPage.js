@@ -142,12 +142,10 @@ const PortfolioPage = ({ startAnimation }) => {
                     bird.scale.set(0.01, 0.01, 0.01);
                     bird.position.set(0, 5, 10);
             
-                    // 🔄 첫 번째 자식 객체에 회전 적용
                     if (bird.children.length > 0) {
                         bird.children[0].rotation.set(Math.PI/2, Math.PI, 0);  // 180도 회전
                     }
             
-                    // 🌟 그림자 설정
                     gltf.scene.traverse(function(node) {
                         if (node.isMesh) { 
                             node.castShadow = true;
