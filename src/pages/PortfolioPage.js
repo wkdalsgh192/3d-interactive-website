@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import ProjectPopup from '../components/ProjectPopup';
 import WebTechModal from "../components/WebTechModal";
+import DataVisualsModal from "../components/DataVisualsModal";
 import TWEEN from '@tweenjs/tween.js';
 import "./PortfolioPage.css";
 import 'swiper/css';
@@ -24,6 +25,7 @@ const PortfolioPage = ({ startAnimation }) => {
     });
     
     const [showWebTechModal, setShowWebTechModal] = useState(false);
+    const [showDataVisualModal, setShowDataVisualModal] = useState(false);
 
     const tweenGroup = new TWEEN.Group();
 
@@ -358,6 +360,18 @@ const PortfolioPage = ({ startAnimation }) => {
             <WebTechModal 
                 isOpen={showWebTechModal}
                 onClose={() => setShowWebTechModal(false)}
+            />
+
+            <ProjectPopup
+                position="50%"
+                thumbnail="/images/3d-population-preview.png"
+                title="Data Visualization Project"
+                subtitle="Data Visualization Project"
+                onClickView={() => setShowDataVisualModal(true)}
+            />
+            <DataVisualsModal
+                isOpen={showDataVisualModal}
+                onClose={() => setShowDataVisualModal(false)}
             />
         </div>
     );

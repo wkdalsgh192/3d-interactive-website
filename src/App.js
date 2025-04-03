@@ -6,7 +6,7 @@ import PortfolioContainer from "./components/PortfolioContainer";
 import LegalPage from "./pages/LegalPage";
 import AboutPage from "./pages/AboutPage";
 import PatchNotePage from "./pages/PatchNotePage";
-
+import PopulationModel from "./models/PopulationModel";
 
 export default function App() {
   return (
@@ -24,6 +24,7 @@ export default function App() {
           <Route path="/legal" element={<LegalPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/patch-note" element={<PatchNotePage />} />
+          <Route path="/visualization" element={<PopulationModel />} />
         </Routes>
       </Box>
     </Box>

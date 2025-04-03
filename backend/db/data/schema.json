@@ -1,0 +1,1 @@
+{"profile": {"columns": [{"name": "firstName", "type": "TEXT"}, {"name": "lastName", "type": "TEXT"}, {"name": "email", "type": "VARCHAR"}]}}
