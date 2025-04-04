@@ -1,5 +1,6 @@
 import os
 import json
+import csv
 from datetime import datetime
 
 DB_DIR = 'data'
@@ -58,3 +59,54 @@ def update_table_metadata(table_name, schema, data_filename=''):
     }
 
     save_schemas(schema)
+
+def import_csv_to_table(table_name, csv_path, delimiter=';', strict=False):
+
+    schemas = load_schema()
+    if table_name not in schemas:
+        raise Exception(f"Table {table_name} not found in schema")
+
+    schema_columns = [col["name"] for col in schemas[table_name]["columns"]]
+    print(schema_columns)
+    data_file = os.path.join(DB_DIR, f"{table_name}.jsonl")
+
+    inserted_rows = 0
+
+    with open(csv_path, newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile, delimiter=delimiter)
+
+        with open(data_file, 'a', encoding='utf-8') as f:
+            for row in reader:
+                print(row)
+                cleaned = {col: row[col] for col in schema_columns if col in row}
+                f.write(json.dumps(cleaned) + '\n')
+                inserted_rows += 1
+
+    # update metadata
+    meta = schemas[table_name].get("meta", {})
+    meta["row_count"] = meta.get("row_count", 0) + inserted_rows
+    meta["last_updated"] = datetime.utcnow().isoformat() + 'Z'
+    schemas[table_name]["meta"] = meta
+    save_schemas(schemas)
+
+    return f"Imported {inserted_rows} rows into '{table_name}' (strict={strict})"
+
+def get_all_rows(table_name:str) -> list:
+    data_path = os.path.join(DB_DIR, f"{table_name}.jsonl")
+
+    if not os.path.exists(data_path):
+        raise FileExistsError(f"No data found for table '{table_name}'")
+    
+    rows = []
+    with open(data_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+
+    return rows
+
+
+
+
+    
