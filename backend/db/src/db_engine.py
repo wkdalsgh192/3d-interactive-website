@@ -3,7 +3,7 @@ import json
 import csv
 from datetime import datetime
 
-DB_DIR = 'data'
+DB_DIR = 'db/data'
 SCHEMA_DIR = os.path.join(DB_DIR, 'schema.json')
 
 def load_schema():
@@ -35,6 +35,60 @@ def create_tables(table_name, columns):
 
     return f"Table '{table_name}' created successfully"
 
+def insert_row(table_name:str, row_data:json):
+    schemas = load_schema()
+    schema = schemas[table_name]
+    meta = schema.get("meta", {})
+    columns = schema["columns"]
+
+    for col in columns:
+        if col.get("auto_increment"):
+            col_name = col["name"]
+            last_id = meta.get("last_inserted_id", 0) + 1
+            row_data[col_name] = last_id
+            meta["last_inserted_id"] = last_id
+
+    data_path = os.path.join(DB_DIR, f"{table_name}.jsonl")
+    with open(data_path, 'a', encoding='utf-8') as f:
+        f.write(json.dumps(row_data) + '\n')
+
+    meta["row_count"] = meta.get("row_count", 0) + 1
+    meta["last_updated"] = datetime.utcnow().isoformat() + 'Z'
+    schemas[table_name]["meta"] = meta
+    save_schemas(schemas)
+
+    return row_data
+
+def update_rows(table_name:str, conditions, updates):
+    data_path = os.path.join(DB_DIR, f"{table_name}.jsonl")
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f"No data file found for table '{table_name}'")
+    
+    schemas = load_schema()
+    if table_name not in schemas:
+        raise Exception(f"No schema found for table '{table_name}'")
+    
+    updated = 0
+    all_rows = []
+
+    with open(data_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            row = json.loads(line.strip())
+            if all(str(row.get(k)) == str(v) for k, v in conditions.items()):
+                for field, value in updates.items():
+                    row[field] = value
+                updated += 1
+            all_rows.append(row)
+
+    with open(data_path, 'w', encoding='utf-8') as f:
+        for row in all_rows:
+            f.write(json.dumps(row) + '\n')
+
+    schemas[table_name]["meta"]["last_updated"] = datetime.utcnow().isoformat() + 'Z'
+    save_schemas(schemas)
+
+    return f"{table_name} has successfully updated {updated} rows"
+
 def update_table_metadata(table_name, schema, data_filename=''):
     data_path = os.path.join(DB_DIR, data_filename)
 
@@ -60,27 +114,46 @@ def update_table_metadata(table_name, schema, data_filename=''):
 
     save_schemas(schema)
 
-def import_csv_to_table(table_name, csv_path, delimiter=';', strict=False):
+def import_csv_to_table(table_name:str, csv_path:str, delimiter=';', strict=False, row_transform=None, on_error=None):
 
     schemas = load_schema()
+    print(schemas)
     if table_name not in schemas:
         raise Exception(f"Table {table_name} not found in schema")
 
     schema_columns = [col["name"] for col in schemas[table_name]["columns"]]
-    print(schema_columns)
     data_file = os.path.join(DB_DIR, f"{table_name}.jsonl")
 
     inserted_rows = 0
+    failed_rows = 0
+    errors = []
 
     with open(csv_path, newline='', encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=delimiter)
 
         with open(data_file, 'a', encoding='utf-8') as f:
-            for row in reader:
-                print(row)
-                cleaned = {col: row[col] for col in schema_columns if col in row}
-                f.write(json.dumps(cleaned) + '\n')
-                inserted_rows += 1
+            try:
+                for row in reader:
+                    # print(row)
+                    cleaned = {col: row[col] for col in schema_columns if col in row}
+                    if row_transform:
+                        cleaned = row_transform(cleaned)
+                    
+                    insert_row(table_name, cleaned)
+                    inserted_rows += 1
+            except Exception as e:
+                failed_rows += 1
+                if on_error:
+                    on_error(row, e)
+                else:
+                    errors.append({"row": row, "error": str(e)})
+
+    return {
+        "table": table_name,
+        "imported": inserted_rows,
+        "failed": failed_rows,
+        "errors": errors
+    }
 
     # update metadata
     meta = schemas[table_name].get("meta", {})
