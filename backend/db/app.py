@@ -91,10 +91,6 @@ def update_population():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-
-
-
-    
 @app.route('/api/<table_name>', methods=['GET'])
 def get_data(table_name):
     try:

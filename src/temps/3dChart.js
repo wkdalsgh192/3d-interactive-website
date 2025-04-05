@@ -131,7 +131,7 @@ export const render3dChart = (data, container) => {
           console.log(selectedMesh.userData);
           // Show data for the selected country
           const countryData = data[selectedMesh.userData.index];
-          const popuCount = countryData["Values"][57]["Count"];
+          const popuCount = countryData["Population"][0]["Number"];
           const popuCountFormatted = (popuCount / 1000000).toFixed(2) + "M";
 
           // Update the data display

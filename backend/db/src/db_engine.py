@@ -148,25 +148,12 @@ def import_csv_to_table(table_name:str, csv_path:str, delimiter=';', strict=Fals
                 else:
                     errors.append({"row": row, "error": str(e)})
 
-    return {
-        "table": table_name,
-        "imported": inserted_rows,
-        "failed": failed_rows,
-        "errors": errors
-    }
-
-    # update metadata
-    meta = schemas[table_name].get("meta", {})
-    meta["row_count"] = meta.get("row_count", 0) + inserted_rows
-    meta["last_updated"] = datetime.utcnow().isoformat() + 'Z'
-    schemas[table_name]["meta"] = meta
-    save_schemas(schemas)
-
     return f"Imported {inserted_rows} rows into '{table_name}' (strict={strict})"
 
 def get_all_rows(table_name:str) -> list:
     data_path = os.path.join(DB_DIR, f"{table_name}.jsonl")
 
+    print(data_path)
     if not os.path.exists(data_path):
         raise FileExistsError(f"No data found for table '{table_name}'")
     

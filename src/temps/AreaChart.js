@@ -8,7 +8,7 @@ export function renderAreaChart(data, container) {
       return;
     }
 
-    const allYearsData = data.Values;
+    const allYearsData = data.Population;
 
     let svg = d3
       .select(".container")
@@ -29,7 +29,7 @@ export function renderAreaChart(data, container) {
       .domain(d3.extent(allYearsData, (d) => timeParser(d.Year)))
       .range([0, 500]);
 
-    console.log(d3.extent(allYearsData, (d) => d.Count));
+    console.log(d3.extent(allYearsData, (d) => d.Number));
 
     let y = d3.scalePow().exponent(0.3).domain([0, 1400000000]).range([1500, 0]);
 
@@ -43,7 +43,7 @@ export function renderAreaChart(data, container) {
           .area()
           .x((d) => x(timeParser(d.Year)))
           .y0(y(0))
-          .y1((d) => y(d.Count))
+          .y1((d) => y(d.Number))
       );
 
     resolve();
