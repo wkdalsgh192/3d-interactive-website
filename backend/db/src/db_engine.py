@@ -153,7 +153,6 @@ def import_csv_to_table(table_name:str, csv_path:str, delimiter=';', strict=Fals
 def get_all_rows(table_name:str) -> list:
     data_path = os.path.join(DB_DIR, f"{table_name}.jsonl")
 
-    print(data_path)
     if not os.path.exists(data_path):
         raise FileExistsError(f"No data found for table '{table_name}'")
     

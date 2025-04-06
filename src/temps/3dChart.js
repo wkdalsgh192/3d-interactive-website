@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
 import TWEEN from '@tweenjs/tween.js';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "dat.gui";
@@ -27,6 +29,7 @@ export const render3dChart = (data, container) => {
       1,
       1000
     );
+    // console.log(camera);
     
     // Create renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -74,11 +77,15 @@ export const render3dChart = (data, container) => {
     const CLICK_OFFSET = 2; // How far the mesh pulls out when clicked
     let selectedMesh = null; // Track currently selected mesh
 
+    countries.registerLocale(enLocale);
+    const getFlagUrl = (countryCode) => {
+      return `https://www.worldatlas.com/r/w292/img/flag/${countryCode.toLowerCase()}-flag.jpg`;
+    };
     const dataDisplay = document.createElement('div');
     dataDisplay.style.cssText = `
         position: absolute;
-        width: 300px;
-        height: 300px;
+        width: 350px;
+        height: 350px;
         top: 50%;
         right: 10%;
         transform: translateY(-50%);
@@ -98,15 +105,12 @@ export const render3dChart = (data, container) => {
 
     // Create a TWEEN group
     const tweenGroup = new TWEEN.Group();
+    let clickInProgress = false;
 
     const onClick = (event) => {
-      const rect = container.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(scene.children);
-
+      if (clickInProgress) return;
+      clickInProgress = true;
+      
       // Reset previous selection
       if (selectedMesh) {
         // Animate back to original position
@@ -118,8 +122,20 @@ export const render3dChart = (data, container) => {
         dataDisplay.style.display = 'none';
       }
 
-      if (intersects.length > 0) {
-        const intersectedObject = intersects[0].object;
+      setTimeout(() => {
+        clickInProgress = false;
+      }, 150); // Adjust timing if needed
+
+      const rect = container.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+      const filtered = intersects.filter(obj => obj.object.userData.isChart);
+
+      if (filtered.length > 0) {
+        const intersectedObject = filtered[0].object;
         if (intersectedObject.userData.isChart) {
           selectedMesh = intersectedObject;
           
@@ -128,9 +144,9 @@ export const render3dChart = (data, container) => {
             selectedMesh.userData.originalPosition = selectedMesh.position.clone();
           }
 
-          console.log(selectedMesh.userData);
           // Show data for the selected country
           const countryData = data[selectedMesh.userData.index];
+          const code = countries.getAlpha2Code(countryData["Country"], "en");
           const popuCount = countryData["Population"][0]["Number"];
           const popuCountFormatted = (popuCount / 1000000).toFixed(2) + "M";
 
@@ -139,6 +155,12 @@ export const render3dChart = (data, container) => {
             <h3 style="margin: 0 0 12px 0; color: #fff; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">
               ${countryData.Country}
             </h3>
+            <div style="height: 70%; overflow: hidden; ">
+              <img
+                src="${getFlagUrl(code)}"
+                style="width:100%; display: block;"
+              />
+            </div>
             <div style="margin-bottom: 8px; font-size: 16px;">
               Population: <strong>${popuCountFormatted}</strong>
             </div>
@@ -282,6 +304,7 @@ export const render3dChart = (data, container) => {
     scene.add(spotLight3);
 
     // Add click event listener
+    container.removeEventListener('click', onClick); // Ensure single binding
     container.addEventListener('click', onClick);
 
     // Animation loop
