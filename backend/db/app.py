@@ -1,6 +1,6 @@
 import os
 import csv
-import json
+from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from src.simple_db import SimpleDB
@@ -9,6 +9,8 @@ from src.db_engine import create_tables, import_csv_to_table, get_all_rows, upda
 app = Flask(__name__)
 # CORS(app, origins=["http://localhost:3000"])
 db = SimpleDB()
+
+APP_VERSION = '1.0.0'
 
 @app.route('/visit', methods=['POST'])
 def visit():
@@ -91,7 +93,15 @@ def update_population():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-@app.route('/api/<table_name>', methods=['GET'])
+@app.route('/health-check', methods=['GET'])
+def get_health_check():
+    return jsonify({
+        'status': 'ok',
+        'version': APP_VERSION,
+        'timestamp': datetime.utcnow().isoformat() + 'Z'
+    }), 200
+    
+@app.route('/<table_name>', methods=['GET'])
 def get_data(table_name):
     try:
         rows = get_all_rows(table_name)
@@ -102,4 +112,6 @@ def get_data(table_name):
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # app.run(debug=True)
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8080)
