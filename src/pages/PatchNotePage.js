@@ -25,6 +25,12 @@ const PatchNotePage = () => {
 
       <h1>Get all the details about the latest feature releases, product improvements, and bug fixes of Minho's World.</h1>
       <br /><br />
+      <h2> 🚀 v0.2 (April 07, 2025) </h2>
+      <ul>
+        <li>Introduced an interactive data visualization project</li>
+        <li>Added a backend server to support data retrieval</li>
+      </ul>
+      <br /><br />
       <h2> 🚀 v0.1 (February 15, 2025) </h2>
       <ul>
         <li>Introduced a scalable notification system design project</li>

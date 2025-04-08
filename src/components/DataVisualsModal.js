@@ -30,37 +30,13 @@ const DataVisualsModal = ({ isOpen, onClose }) => {
                     </div>
                 </div>
                 <div className="modal-content-wrapper">
-                    <h1 className="modal-subtitle">Interactive Data Visualization Dashboard</h1>
-                    
-                    <h1>Scaling Admin Tools for 8M+ Users</h1>
-                    <p2>The admin panel lacked a centralized dashboard for tracking key business metrics. I designed and built a real-time analytics dashboard, integrating revenue, user groups, and data usage. I also proposed a customizable charting system, though it was not implemented due to cost constraints.</p2>
-
-                    <img 
-                        className="project-img" 
-                        src="/images/dashboard.png"  // Update with your GIF path
-                        alt="Web Development Process"
-                        style={{
-                            width: '100%',
-                            maxWidth: '800px',
-                            margin: '20px auto',
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-                        }}
-                    />
-
-                    {/* <div style={{ width: '100%', height: '500px', margin: '20px 0' }}>
-                        <DashboardModel />
-                    </div> */}
-                    
-                    <h1>Exploring Interactive 3D Data Visualization</h1>
-                    <p2> Inspired by the limitations of traditional dashboards, I started a side project to explore interactive 3D charts, experimenting with new ways to visually represent complex datasets.</p2>
-                
+                    {/* <h1 className="modal-subtitle">Interactive Visual Chart</h1> */}
                     <button 
                         onClick={handleNavigate} 
                         style={{
                             padding: '10px 20px',
                             marginTop: '20px',
-                            backgroundColor: '#007BFF',
+                            backgroundColor: '#B97684',
                             color: '#fff',
                             border: 'none',
                             borderRadius: '5px',
@@ -70,6 +46,61 @@ const DataVisualsModal = ({ isOpen, onClose }) => {
                     >
                         Go to Visualization
                     </button>
+                    
+                    <h1>Overview</h1>
+                    <img 
+                        className="project-img" 
+                        src="/images/chart.png"  // Update with your GIF path
+                        alt="Web Development Process"
+                        style={{
+                            width: '100%',
+                            maxWidth: '800px',
+                            margin: '20px auto',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                        }}
+                    />
+                    <p2>
+                        The component mounts and begins by fetching country metadata from your backend. It then clears out any existing SVG charts in the container to prevent duplicates and proceeds to render updated area charts for each country. 
+                        Once the 2D charts are complete, it renders a 3D chart using the combined dataset.
+                    </p2>
+                    <p2>
+                        Creates an off-screen SVG using D3 to convert a country's population data into a scalable visual representation. It parses year values for the x-axis using a time scale and maps population numbers to the y-axis using a power scale. These axes define the shape of an area chart, which is rendered as a path element. 
+                        Though the SVG is hidden and non-interactive, it serves as a data source for generating 3D geometry based on the chart’s scaled shape.
+                    </p2>
+                    
+                    <h1>Interactive Visualization</h1>
+                    <img 
+                        className="project-img" 
+                        src="/images/ray-casting.png"  // Update with your GIF path
+                        alt="Web Development Process"
+                        style={{
+                            width: '100%',
+                            maxWidth: '800px',
+                            margin: '20px auto',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                        }}
+                    />
+                    
+                    <p2> 
+                        Identifies and interacts with a selected 3D mesh by using raycasting to detect which object was clicked within the scene. It begins by preventing rapid repeated clicks with a short debounce. If a mesh was previously selected, it resets its position and hides the data display. 
+                        Then, it calculates the mouse position relative to the canvas, casts a ray into the 3D scene, and filters intersected objects to target only those marked as chart element. A styled information box is updated with the country name, flag, and population, and the selected mesh is animated outward to visually distinguish it from the rest.
+                    </p2>
+
+                    <img 
+                        className="project-img" 
+                        src="/images/chart-preview.png"  // Update with your GIF path
+                        alt="Web Development Process"
+                        style={{
+                            width: '100%',
+                            maxWidth: '800px',
+                            margin: '20px auto',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                        }}
+                    />
+                
                 </div>
         </div>
         </>

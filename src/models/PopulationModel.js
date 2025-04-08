@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { formatData } from "../temps/DataFormatter";
 import { renderAreaChart } from "../temps/AreaChart";
 import { render3dChart } from "../temps/3dChart";
-import { KeyOutlined } from "@mui/icons-material";
-// import { Language } from "@mui/icons-material";
 
 const PopulationModel = () => {
   const [data, setData] = useState(null);
@@ -26,12 +23,10 @@ const PopulationModel = () => {
         }
 
         const countryData = formatCountryInfo(await response.json());
-        const populationData = await formatData("/population.csv");
-        
 
         setData(countryData);
         
-        if (populationData && containerRef.current) {
+        if (countryData && containerRef.current) {
           const existingSvgs = containerRef.current.querySelectorAll('svg.population-chart');
           existingSvgs.forEach(svg => svg.remove());
           
@@ -97,8 +92,7 @@ function formatCountryInfo(allData) {
 
   // Get Initial Year Data for all countries and
   // sort highest count first
-  const finalData = allData.sort((a, b) => b.Population[0].Number - a.Population[0].Number).slice(0, 30);
-  return finalData
+  return allData.sort((a, b) => b.Population[0].Number - a.Population[0].Number).slice(0, 30);
 }
 
 export default PopulationModel;

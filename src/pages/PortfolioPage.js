@@ -366,7 +366,7 @@ const PortfolioPage = ({ startAnimation }) => {
                 position="50%"
                 thumbnail="/images/3d-population-preview.png"
                 title="Data Visualization Project"
-                subtitle="Data Visualization Project"
+                subtitle="Interactive 3D visualization of global population trends through time."
                 onClickView={() => setShowDataVisualModal(true)}
             />
             <DataVisualsModal
