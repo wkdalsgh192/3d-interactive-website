@@ -7,7 +7,7 @@ from src.simple_db import SimpleDB
 from src.db_engine import create_tables, import_csv_to_table, get_all_rows, update_rows
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"])
+# CORS(app, origins=["http://localhost:3000"])
 db = SimpleDB()
 
 @app.route('/visit', methods=['POST'])
