@@ -1,7 +1,38 @@
 import os
 import json
 import csv
+import bisect
 from datetime import datetime
+
+class BTreeIndex:
+    def __init__(self):
+        self.data = []
+
+    def insert(self, key, value):
+        bisect.insort(self.data, (key, value))
+
+    def find(self, key):
+        results = []
+        i = bisect.bisect_left(self.data, (key, -float('inf')))
+        while i < len(self.data) and self.data[i][0] == key:
+            results.append(self.data[i][1])
+            i += 1
+        return results
+
+    def to_dict(self):
+        results = {}
+        for key, value in self.data:
+            results.setdefault(key, []).append(value)
+        return results
+
+    @classmethod
+    def from_dict(cls, data:dict):
+        obj = cls()
+        for key, values in data.items():
+            for value in values:
+                obj.insert(key, value)
+        return obj
+
 
 class DBEngine:
     def __init__(self, db_dir='db/data'):
@@ -155,23 +186,36 @@ class DBEngine:
 
     def build_index(self, table_name, key_column):
         data_path = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
-        index = {}
+        # index = {}
+        index = BTreeIndex()
 
         with open(data_path, 'r', encoding = 'utf-8') as f:
             for line_number, line in enumerate(f):
                 row = json.loads(line.strip())
                 key = row.get(key_column)
                 if key:
-                    index[key] = line_number
-        
+                    # index[key] = line_number
+                    index.insert(key, line_number)
         return index
 
-    def save_index(self, index, table_name, key_column):
+    def save_index(self, index:BTreeIndex, table_name, key_column):
         index_path = os.path.join(self.DB_DIR, "indexes", f"{table_name}_{key_column}_btree_index.json")
         os.makedirs(os.path.dirname(index_path), exist_ok=True)
 
         with open(index_path, 'w', encoding='utf-8') as f:
-            json.dump(index, f, indent=2)
+            json.dump(index.to_dict(), f, indent=2)
+
+    def load_index(self, table_name, key_column):
+        index_path = os.path.join(self.DB_DIR, "indexes", f"{table_name}_{key_column}_btree_index.json")
+        
+        if not os.path.exists(index_path):
+            return None
+
+        data = None
+        with open(index_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        return BTreeIndex.from_dict(data)
 
     def search_rows(self, table_name:str, conditions:iter) -> list:
         data_path = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
