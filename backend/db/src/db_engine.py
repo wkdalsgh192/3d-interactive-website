@@ -2,6 +2,7 @@ import os
 import json
 import csv
 import bisect
+import struct
 from datetime import datetime
 
 class BTreeIndex:
@@ -49,6 +50,64 @@ class DBEngine:
     def save_schemas(self, schema_data):
         with open(self.SCHEMA_DIR, 'w') as f:
             json.dump(schema_data, f)
+    
+    def serialize_tuple(self, row:dict, schema:list[dict]) -> bytes:
+        buffer = b""
+
+        for col in schema:
+            # print(col)
+            name = col["name"]
+            col_type = col["type"]
+            value = row.get(name)
+
+            if col_type == "INT":
+                buffer += struct.pack("i", int(value))
+
+            elif col_type == "TEXT":
+                length = col.get("length", 12)
+                text = str(value).encode('utf-8')
+                text = text.ljust(length, b'\x00')
+                buffer += struct.pack(f"{length}s", text)
+
+            elif col_type == "JSON":
+                json_bytes = json.dumps(value).encode('utf-8')
+                buffer += struct.pack("H", len(json_bytes))
+                buffer += json_bytes
+            
+            else:
+                raise ValueError(f"Unsupported column type: {col_type}")
+            
+        return buffer
+    
+    def deserialize_tuple(self, raw: bytes, schema:list[dict]) -> {dict, int}:
+        row = {}
+        offset = 0
+
+        for col in schema:
+            name = col["name"]
+            col_type = col["type"]
+
+            if col_type == "INT":
+                row[name] = struct.unpack_from("i", raw, offset)[0]
+                offset += 4
+
+            elif col_type == "TEXT":
+                length = col.get("length", 12)
+                text_bytes = struct.unpack_from(f"{length}s", raw, offset)[0]
+                row[name] = text_bytes.decode('utf-8').strip('\x00')
+                offset += length
+            
+            elif col_type == "JSON":
+                json_len = struct.unpack_from("H", raw, offset)[0]
+                offset += 2
+                json_bytes = raw[offset:offset+json_len]
+                row[name] = json.loads(json_bytes.decode('utf-8'))
+                offset += json_len
+
+            else:
+                raise ValueError(f"Unsupported column type: {col_type}")
+
+        return row, offset
 
     def create_tables(self, table_name, columns):
         os.makedirs(self.DB_DIR, exist_ok=True)
@@ -69,29 +128,56 @@ class DBEngine:
 
         return f"Table '{table_name}' created successfully"
 
-    def insert_row(self, table_name:str, row_data:json):
+    # def insert_row(self, table_name:str, row_data:json):
+    #     schemas = self.load_schema()
+    #     schema = schemas[table_name]
+    #     meta = schema.get("meta", {})
+    #     columns = schema["columns"]
+
+    #     for col in columns:
+    #         if col.get("auto_increment"):
+    #             col_name = col["name"]
+    #             last_id = meta.get("last_inserted_id", 0) + 1
+    #             row_data[col_name] = last_id
+    #             meta["last_inserted_id"] = last_id
+
+    #     data_path = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
+    #     with open(data_path, 'a', encoding='utf-8') as f:
+    #         f.write(json.dumps(row_data) + '\n')
+
+    #     meta["row_count"] = meta.get("row_count", 0) + 1
+    #     meta["last_updated"] = datetime.utcnow().isoformat() + 'Z'
+    #     schemas[table_name]["meta"] = meta
+    #     self.save_schemas(schemas)
+
+    #     return row_data
+
+    def insert_row(self, table_name:str, row:dict):
         schemas = self.load_schema()
         schema = schemas[table_name]
-        meta = schema.get("meta", {})
         columns = schema["columns"]
+        meta = schema.get("meta", {})
 
         for col in columns:
             if col.get("auto_increment"):
                 col_name = col["name"]
                 last_id = meta.get("last_inserted_id", 0) + 1
-                row_data[col_name] = last_id
+                row[col_name] = last_id
                 meta["last_inserted_id"] = last_id
+        
+        binary_data = self.serialize_tuple(row, columns)
 
-        data_path = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
-        with open(data_path, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(row_data) + '\n')
-
+        table_path = os.path.join(self.DB_DIR, f"{table_name}.bin")
+        with open(table_path, 'ab') as f:
+            f.write(binary_data)
+        
+        # Update metadata
         meta["row_count"] = meta.get("row_count", 0) + 1
         meta["last_updated"] = datetime.utcnow().isoformat() + 'Z'
         schemas[table_name]["meta"] = meta
         self.save_schemas(schemas)
 
-        return row_data
+        return meta["row_count"]
 
     def update_rows(self, table_name:str, conditions, updates):
         data_path = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
@@ -151,12 +237,12 @@ class DBEngine:
     def import_csv_to_table(self, table_name:str, csv_path:str, delimiter=';', strict=False, row_transform=None, on_error=None):
 
         schemas = self.load_schema()
-        print(schemas)
         if table_name not in schemas:
             raise Exception(f"Table {table_name} not found in schema")
 
         schema_columns = [col["name"] for col in schemas[table_name]["columns"]]
-        data_file = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
+        # data_file = os.path.join(self.DB_DIR, f"{table_name}.bin")
+        # data_file = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
 
         inserted_rows = 0
         failed_rows = 0
@@ -165,24 +251,23 @@ class DBEngine:
         with open(csv_path, newline='', encoding='utf-8-sig') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=delimiter)
 
-            with open(data_file, 'a', encoding='utf-8') as f:
-                try:
-                    for row in reader:
-                        # print(row)
-                        cleaned = {col: row[col] for col in schema_columns if col in row}
-                        if row_transform:
-                            cleaned = row_transform(cleaned)
-                        
-                        self.insert_row(table_name, cleaned)
-                        inserted_rows += 1
-                except Exception as e:
-                    failed_rows += 1
-                    if on_error:
-                        on_error(row, e)
-                    else:
-                        errors.append({"row": row, "error": str(e)})
+            try:
+                for row in reader:
+                    # print(row)
+                    cleaned = {col: row[col] for col in schema_columns if col in row}
+                    if row_transform:
+                        cleaned = row_transform(cleaned)
+                    
+                    self.insert_row(table_name, cleaned)
+                    inserted_rows += 1
+            except Exception as e:
+                failed_rows += 1
+                if on_error:
+                    on_error(row, e)
+                else:
+                    errors.append({"row": row, "error": str(e)})
 
-        return f"Imported {inserted_rows} rows into '{table_name}' (strict={strict})"
+        return inserted_rows, f"Imported {inserted_rows} rows into '{table_name}' (strict={strict})"
 
     def build_index(self, table_name, key_column):
         data_path = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
@@ -258,17 +343,40 @@ class DBEngine:
 
         return results
 
+    # def get_all_rows(self, table_name:str) -> list:
+    #     data_path = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
+
+    #     if not os.path.exists(data_path):
+    #         raise FileExistsError(f"No data found for table '{table_name}'")
+        
+    #     rows = []
+    #     with open(data_path, 'r', encoding='utf-8') as f:
+    #         for line in f:
+    #             line = line.strip()
+    #             if line:
+    #                 rows.append(json.loads(line))
+
+    #     return rows
+    
     def get_all_rows(self, table_name:str) -> list:
-        data_path = os.path.join(self.DB_DIR, f"{table_name}.jsonl")
+        schemas = self.load_schema()
+        schema = schemas[table_name]["columns"]
+        data_path = os.path.join(self.DB_DIR, f"{table_name}.bin")
 
         if not os.path.exists(data_path):
             raise FileExistsError(f"No data found for table '{table_name}'")
         
         rows = []
-        with open(data_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    rows.append(json.loads(line))
+        with open(data_path, 'rb') as f:
+            data = f.read()
+            offset = 0
+            while offset < len(data):
+                try:
+                    row, size = self.deserialize_tuple(data[offset:], schema)
+                    rows.append(row)
+                    offset += size
+                except Exception as e:
+                    print("Deserialization failed", e)
+                    break
 
         return rows
