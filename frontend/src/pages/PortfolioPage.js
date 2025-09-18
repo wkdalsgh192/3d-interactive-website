@@ -26,6 +26,7 @@ const PortfolioPage = ({ startAnimation }) => {
     
     const [showWebTechModal, setShowWebTechModal] = useState(false);
     const [showDataVisualModal, setShowDataVisualModal] = useState(false);
+    const [showGraphDatabaseModal, setGraphDatabaseModal] = useState(false);
 
     const tweenGroup = new TWEEN.Group();
 
@@ -372,6 +373,18 @@ const PortfolioPage = ({ startAnimation }) => {
             <DataVisualsModal
                 isOpen={showDataVisualModal}
                 onClose={() => setShowDataVisualModal(false)}
+            />
+
+            <ProjectPopup
+                position="50%"
+                thumbnail="/images/3d-population-preview.png"
+                title="Distributed Graph Database Research Project"
+                subtitle=""
+                onClickView={() => setGraphDatabaseModal(true)}
+            />
+            <DataVisualsModal
+                isOpen={showGraphDatabaseModal}
+                onClose={() => setGraphDatabaseModal(false)}
             />
         </div>
     );

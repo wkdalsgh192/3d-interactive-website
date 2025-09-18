@@ -25,6 +25,7 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/patch-note" element={<PatchNotePage />} />
           <Route path="/visualization" element={<PopulationModel />} />
+          <Route path="/research" element={<PopulationModel />} />
         </Routes>
       </Box>
     </Box>
