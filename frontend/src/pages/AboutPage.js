@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-const Legal = () => {
+const About = () => {
   useEffect(() => {
     document.body.style.backgroundColor = "black";
     document.body.style.color = "white"; // Ensure text is readable
@@ -39,4 +39,4 @@ const Legal = () => {
   );
 };
 
-export default Legal;
+export default About;

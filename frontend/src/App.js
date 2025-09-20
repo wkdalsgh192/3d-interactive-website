@@ -7,7 +7,8 @@ import LegalPage from "./pages/LegalPage";
 import AboutPage from "./pages/AboutPage";
 import PatchNotePage from "./pages/PatchNotePage";
 import PopulationModel from "./models/PopulationModel";
-
+import ResearchPage from "./pages/research/ResearchPage";
+import EbayGraphDatabasePage from "./pages/research/EbayGraphDatabasePage";
 export default function App() {
   return (
     <Box sx={{ display: "flex" }}>
@@ -25,7 +26,8 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/patch-note" element={<PatchNotePage />} />
           <Route path="/visualization" element={<PopulationModel />} />
-          <Route path="/research" element={<PopulationModel />} />
+          <Route path="/research" element={<ResearchPage />} />
+          <Route path="/research/graph-db" element={<EbayGraphDatabasePage />} />
         </Routes>
       </Box>
     </Box>
