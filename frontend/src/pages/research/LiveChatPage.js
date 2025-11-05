@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import LiveChatClient from "../../components/LiveChatClient";
+import ChatBox from "../../components/ChatBox";
 
 const LiveChatOverlayPage = () => {
   useEffect(() => {
@@ -70,7 +70,7 @@ const LiveChatOverlayPage = () => {
           marginTop: "30px",
         }}
       >
-        <LiveChatClient />
+        <ChatBox />
       </div>
       
 

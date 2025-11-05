@@ -14,13 +14,13 @@ engine = DBEngine()
 
 class ChatNamespace(Namespace):
     def on_connect(self):
-        print("✅ Chat namespace connected")
+        print("Chat namespace connected")
 
     def on_disconnect(self):
-        print("❌ Chat namespace disconnected")
+        print("Chat namespace disconnected")
 
     def on_message(self, data):
-        print("💬 Message:", data)
+        print("Message:", data)
         emit("message", data, broadcast=True)
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
