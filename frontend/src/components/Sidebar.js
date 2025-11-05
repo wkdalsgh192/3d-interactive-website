@@ -37,6 +37,7 @@ export default function Sidebar() {
                 { text: "About", icon: <SettingsIcon />, path: "/about" },
                 { text: "Legal", icon: <SettingsIcon />, path: "/legal" },
                 { text: "Research", icon: <SettingsIcon />, path: "/research" },
+                { text: "Project", icon: <SettingsIcon />, path: "/project" },
                 { text: "Release Notes", icon: <SettingsIcon />, path: "/patch-note" }
               ].map((item) => (
                 <ListItem 

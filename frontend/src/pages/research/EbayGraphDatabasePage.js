@@ -42,6 +42,19 @@ const EbayGraphDatabasePage = () => {
             <li>Implemented fault-tolerance mechanisms by simulating network and node failures to ensure query correctness under distributed execution.</li>
         </ul>
 
+        <img 
+            className="project-img" 
+            src="/images/pipelined-sorting.png"
+            alt="RDD lineage recomputation diagram"
+            style={{
+                width: '100%',
+                maxWidth: '800px',
+                margin: '20px auto',
+                borderRadius: '8px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            }}
+        />
+
         <h2>Achievements</h2>
         <ul>
             <li>Reduced query execution latency from ~100ms to under 10ms for optimized query plans while supporting concurrent workloads.</li>

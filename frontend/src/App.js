@@ -9,6 +9,10 @@ import PatchNotePage from "./pages/PatchNotePage";
 import PopulationModel from "./models/PopulationModel";
 import ResearchPage from "./pages/research/ResearchPage";
 import EbayGraphDatabasePage from "./pages/research/EbayGraphDatabasePage";
+import HadoopSparkPage from "./pages/project/SparkProcessingPage";
+import ProjectPage from "./pages/project/ProjectPage";
+import TrafficForecastingPage from "./pages/project/TrafficForecastingPage";
+
 export default function App() {
   return (
     <Box sx={{ display: "flex" }}>
@@ -28,6 +32,9 @@ export default function App() {
           <Route path="/visualization" element={<PopulationModel />} />
           <Route path="/research" element={<ResearchPage />} />
           <Route path="/research/graph-db" element={<EbayGraphDatabasePage />} />
+          <Route path="/project/spark-processing" element={<HadoopSparkPage />} />
+          <Route path="/project/traffic-forecasting" element={<TrafficForecastingPage />} />
+          <Route path="/project" element={<ProjectPage />} />
         </Routes>
       </Box>
     </Box>
