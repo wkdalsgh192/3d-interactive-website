@@ -35,6 +35,11 @@ const ResearchPage = () => {
           <h2>Ebay Distributed Graph Database</h2>
         </div>
       </Link>
+      <Link to="/research/live-chat" style={{ textDecoration: "none", color: "inherit" }}>
+        <div style={cardStyle}>
+          <h2>Live Chat Overlay Demo</h2>
+        </div>
+      </Link>
     </div>
   );
 };

@@ -13,6 +13,8 @@ import HadoopSparkPage from "./pages/project/SparkProcessingPage";
 import ProjectPage from "./pages/project/ProjectPage";
 import TrafficForecastingPage from "./pages/project/TrafficForecastingPage";
 
+import LiveChatOverlayPage  from "./pages/research/LiveChatPage";
+
 export default function App() {
   return (
     <Box sx={{ display: "flex" }}>
@@ -35,6 +37,7 @@ export default function App() {
           <Route path="/project/spark-processing" element={<HadoopSparkPage />} />
           <Route path="/project/traffic-forecasting" element={<TrafficForecastingPage />} />
           <Route path="/project" element={<ProjectPage />} />
+          <Route path="/research/live-chat" element={<LiveChatOverlayPage />} />
         </Routes>
       </Box>
     </Box>

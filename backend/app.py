@@ -2,13 +2,29 @@ import os
 import csv
 from datetime import datetime
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+# from flask_cors import CORS
 from db.src.simple_db import SimpleDB
-from db.src.db_engine import create_tables, import_csv_to_table, get_all_rows, update_rows
+from db.src.db_engine import DBEngine
+from flask_socketio import SocketIO, Namespace, emit
 
 app = Flask(__name__)
 # CORS(app, origins=["http://localhost:3000"])
 db = SimpleDB()
+engine = DBEngine()
+
+class ChatNamespace(Namespace):
+    def on_connect(self):
+        print("✅ Chat namespace connected")
+
+    def on_disconnect(self):
+        print("❌ Chat namespace disconnected")
+
+    def on_message(self, data):
+        print("💬 Message:", data)
+        emit("message", data, broadcast=True)
+
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
+socketio.on_namespace(ChatNamespace("/chat"))
 
 APP_VERSION = '1.0.0'
 
@@ -34,7 +50,7 @@ def create_table():
     if not table_name or not columns:
         return {"error": "Missing table name or columns"}, 400
     
-    result = create_tables(table_name, columns)
+    result = engine.create_tables(table_name, columns)
     return {"message": result}, 201
 
 @app.route('/import-csv', methods=['POST'])
@@ -50,7 +66,7 @@ def import_csv():
     print("Resolved path:", abs_path)
 
     try:
-        result = import_csv_to_table(table_name, abs_path, delimiter)
+        result = engine.import_csv_to_table(table_name, abs_path, delimiter)
         return jsonify({"message": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -87,7 +103,7 @@ def update_population():
     try:
         updated = 0
         for res in results:
-            update_rows(table_name, {"countryCode": res["countryCode"]}, {"population": res["population"]})
+            engine.update_rows(table_name, {"countryCode": res["countryCode"]}, {"population": res["population"]})
             updated += 1
         return jsonify({"message": f"{updated} rows updated"})
     except Exception as e:
@@ -104,14 +120,33 @@ def get_health_check():
 @app.route('/<table_name>', methods=['GET'])
 def get_data(table_name):
     try:
-        rows = get_all_rows(table_name)
+        rows = engine.get_all_rows(table_name)
         return jsonify(rows)
     except FileNotFoundError:
         return jsonify({"error": f"Table '{table_name}' not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/chat')
+def chat():
+    return "Live Chat Server Running"
+
+@socketio.on('connect', namespace='/chat')
+def handle_connect():
+    print('Client Connected')
+
+@socketio.on('disconnect', namespace='/chat')
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on('chat-message', namespace='/chat')
+def handle_message(data):
+    print(f"{data}")
+    emit('chat-message', data, broadcast=True, namespace='/chat')
 
 if __name__ == "__main__":
     # app.run(debug=True)
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=8080)
+    # from waitress import serve
+    import eventlet
+    import eventlet.wsgi
+    socketio.run(app, host="0.0.0.0", port=8080)
