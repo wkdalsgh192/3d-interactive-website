@@ -4,6 +4,10 @@ on:
   push:
     branches: [ master ]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   ci:
     name: Continuous Integration
@@ -73,8 +77,13 @@ jobs:
             sudo docker pull ghcr.io/${{ github.repository }}/frontend:latest
             sudo docker pull ghcr.io/${{ github.repository }}/backend:latest
 
-            cd /home/ubuntu/my-dashboard || git clone https://github.com/${{ github.repository }} my-dashboard && cd my-dashboard
+            if [ ! -d "/home/ubuntu/3d-interactive-website" ]; then
+              cd /home/ubuntu
+              git clone https://github.com/${{ github.repository }} 3d-interactive-website
+            fi
 
+            cd /home/ubuntu/3d-interactive-website
+            git pull origin master
             sudo docker compose down || true
             sudo docker compose up -d
             sudo docker image prune -f
