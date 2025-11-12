@@ -1,10 +1,15 @@
 # test_api.py
+from app import app
 import requests
 
 # POST /visit
-for _ in range(100):
-    requests.post('http://localhost:5000/visit')
+def test_visit():
+    client = app.test_client()
+    response = client.post("/visit")
+    assert response.status_code == 200
 
 # GET /count
-res2 = requests.get('http://localhost:5000/count')
-print("GET /count response:", res2.json())
+def test_count():
+    client = app.test_client()
+    response = client.get("/count")
+    assert response.status_code == 200
