@@ -11,6 +11,7 @@ import "./PortfolioPage.css";
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import ChatBox from "../components/ChatBox";
 
 const PortfolioPage = ({ startAnimation }) => {
 
@@ -386,6 +387,7 @@ const PortfolioPage = ({ startAnimation }) => {
                 isOpen={showGraphDatabaseModal}
                 onClose={() => setGraphDatabaseModal(false)}
             />
+            <ChatBox />
         </div>
     );
 }

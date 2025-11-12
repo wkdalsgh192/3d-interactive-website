@@ -35,7 +35,8 @@ const getOrCreateGuest = () => {
 export default function ChatBox() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
-    const username = getOrCreateGuest();
+    // const username = getOrCreateGuest();
+    const username = generateGuestName();
     const [color] = useState(["#60a5fa", "#f472b6", "#34d399", "#facc15", "#f87171"][
         Math.floor(Math.random() * 5)
       ]
